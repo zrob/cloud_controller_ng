@@ -11,3 +11,8 @@ ENDSSH
 if ! cat /etc/hosts | grep "blobstore.service.cf.internal" > /dev/null; then
   echo "10.244.0.130 blobstore.service.cf.internal" | sudo tee -a /etc/hosts > /dev/null
 fi
+
+if ! cat /etc/hosts | grep "uaa.service.cf.internal" > /dev/null; then
+  echo "10.244.0.134 uaa.service.cf.internal" | sudo tee -a /etc/hosts > /dev/null
+fi
+

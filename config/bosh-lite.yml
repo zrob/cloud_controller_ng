@@ -215,6 +215,8 @@ renderer:
   default_results_per_page: 50
   max_inline_relations_depth: 2
 
+shared_isolation_segment_name: "shared"
+
 uaa_client_name: "cc-service-dashboards"
 uaa_client_secret: cc-broker-secret
 uaa_client_scope: openid,cloud_controller_service_permissions.read

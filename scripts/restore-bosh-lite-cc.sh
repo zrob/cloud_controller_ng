@@ -8,8 +8,14 @@ bosh ssh api_z1 0 <<'ENDSSH'
   sudo /var/vcap/bosh/bin/monit restart route_registrar
 ENDSSH
 
-line_number=$(cat /etc/hosts | grep -n "blobstore.service.cf.internal" | cut -d : -f 1)
+blobstore_line_number=$(cat /etc/hosts | grep -n "blobstore.service.cf.internal" | cut -d : -f 1)
 
-if [[ -n "${line_number}" ]]; then
-  sed "${line_number}d" /etc/hosts | sudo tee /etc/hosts > /dev/null
+if [[ -n "${blobstore_line_number}" ]]; then
+  sed "${blobstore_line_number}d" /etc/hosts | sudo tee /etc/hosts > /dev/null
+fi
+
+uaa_line_number=$(cat /etc/hosts | grep -n "uaa.service.cf.internal" | cut -d : -f 1)
+
+if [[ -n "${uaa_line_number}" ]]; then
+  sed "${uaa_line_number}d" /etc/hosts | sudo tee /etc/hosts > /dev/null
 fi
