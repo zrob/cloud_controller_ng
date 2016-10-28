@@ -21,12 +21,21 @@ module VCAP
     end
 
     def decode_token(auth_token)
+
+      require 'pry'; binding.pry
+      # get access_token for user
+      # curl 'http://login.bosh-lite.com/check_token' -H "Authorization: Basic [base64 encoded client_username:client_credentials]" -i -d 'client_id=cf&client_secret=' -X POST -d 'token=[access_token]'
+
       return unless token_format_valid?(auth_token)
 
-      if symmetric_key
-        decode_token_with_symmetric_key(auth_token)
+      if opaque_token?
+        decode_opaque_token(auth_token)
       else
-        decode_token_with_asymmetric_key(auth_token)
+        if symmetric_key
+          decode_token_with_symmetric_key(auth_token)
+        else
+          decode_token_with_asymmetric_key(auth_token)
+        end
       end
     rescue CF::UAA::TokenExpired => e
       @logger.warn('Token expired')
@@ -40,6 +49,21 @@ module VCAP
 
     def token_format_valid?(auth_token)
       auth_token && auth_token.upcase.start_with?('BEARER')
+    end
+
+    def opaque_token?
+      true
+    end
+
+    def decode_opaque_token(auth_token)
+      # uaa_login_path = @config[:login][:url]
+      # uri = URI("#{uaa_login_path}/check_token")
+      # body = { token: auth_token }
+      # auth_header = { 'Authorization' =>  }
+      # response = HTTPClient.new.post(uri, body)
+      # response
+
+      # call to UAA::Info.decode_token
     end
 
     def decode_token_with_symmetric_key(auth_token)
@@ -64,7 +88,7 @@ module VCAP
     end
 
     def decode_token_with_key(auth_token, options)
-      options = { audience_ids: uaa_config[:resource_id] }.merge(options)
+      options = {audience_ids: uaa_config[:resource_id]}.merge(options)
       token = CF::UAA::TokenCoder.new(options).decode_at_reference_time(auth_token, Time.now.utc.to_i - @grace_period_in_seconds)
       expiration_time = token['exp'] || token[:exp]
       if expiration_time && expiration_time < Time.now.utc.to_i
@@ -83,7 +107,7 @@ module VCAP
 
     def asymmetric_key
       skip_cert_verify = !!config[:skip_cert_verify]
-      ssl_options = { skip_ssl_validation: skip_cert_verify }
+      ssl_options = {skip_ssl_validation: skip_cert_verify}
       ssl_options[:ssl_ca_file] = uaa_config[:ca_file] if !skip_cert_verify
 
       info = CF::UAA::Info.new(uaa_config[:internal_url], ssl_options)

@@ -215,6 +215,9 @@ module VCAP::CloudController
         optional(:cloud_controller_username_lookup_client_name) => String,
         optional(:cloud_controller_username_lookup_client_secret) => String,
 
+        optional(:cloud_controller_user_token_lookup) => String,
+        optional(:cloud_controller_user_token_lookup_secret) => String,
+
         :renderer => {
           max_results_per_page: Integer,
           default_results_per_page: Integer,

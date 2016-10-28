@@ -668,6 +668,9 @@ properties:
   uaa.clients.cloud_controller_username_lookup.secret:
     description: "Used for fetching usernames from UAA."
 
+  uaa.clients.cloud_controller_user_token_lookup.secret:
+      description: "Used for decoding opaque tokes with UAA."
+
   uaa.clients.cc_routing.secret:
     description: "Used for fetching routing information from the Routing API"
 
