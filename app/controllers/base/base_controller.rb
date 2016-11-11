@@ -56,6 +56,10 @@ module VCAP::CloudController::RestController
       inject_dependencies(dependencies)
     end
 
+    def audit_user_info
+      @audit_user_info ||= VCAP::CloudController::Audit::UserInfo.from_security_context(SecurityContext)
+    end
+
     # Override this to set dependencies
     #
     def inject_dependencies(dependencies={})

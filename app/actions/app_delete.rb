@@ -10,12 +10,9 @@ module VCAP::CloudController
   class AppDelete
     class InvalidDelete < StandardError; end
 
-    attr_reader :user_guid, :user_email
-
-    def initialize(user_guid, user_email)
-      @user_guid = user_guid
-      @user_email = user_email
-      @logger = Steno.logger('cc.action.app_delete')
+    def initialize(user_info)
+      @user_info = user_info
+      @logger    = Steno.logger('cc.action.app_delete')
     end
 
     def delete(apps, record_event: true)
@@ -41,21 +38,19 @@ module VCAP::CloudController
     private
 
     def record_audit_event(app)
-      Repositories::AppEventRepository.new.record_app_delete_request(
+      Repositories::AppEventRepository.new(@user_info).record_app_delete_request(
         app,
-        app.space,
-        @user_guid,
-        @user_email
+        app.space
       )
     end
 
     def delete_subresources(app)
-      PackageDelete.new(user_guid, user_email).delete(app.packages)
-      TaskDelete.new(user_guid, user_email).delete(app.tasks)
-      DropletDelete.new(user_guid, user_email, stagers).delete(app.droplets)
-      ProcessDelete.new(user_guid, user_email).delete(app.processes)
-      RouteMappingDelete.new(user_guid, user_email).delete(route_mappings_to_delete(app))
-      ServiceBindingDelete.new(user_guid, user_email).delete(app.service_bindings)
+      PackageDelete.new(@user_info.guid, @user_info.email).delete(app.packages)
+      TaskDelete.new(@user_info.guid, @user_info.email).delete(app.tasks)
+      DropletDelete.new(@user_info.guid, @user_info.email, stagers).delete(app.droplets)
+      ProcessDelete.new(@user_info.guid, @user_info.email).delete(app.processes)
+      RouteMappingDelete.new(@user_info).delete(route_mappings_to_delete(app))
+      ServiceBindingDelete.new(@user_info.guid, @user_info.email).delete(app.service_bindings)
       delete_buildpack_cache(app)
     end
 

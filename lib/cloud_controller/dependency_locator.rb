@@ -73,10 +73,6 @@ module CloudController
       @dependencies[:upload_handler] || raise('upload_handler not set')
     end
 
-    def app_event_repository
-      @dependencies[:app_event_repository] || raise('app_event_repository not set')
-    end
-
     def instances_reporters
       @dependencies[:instances_reporters] || raise('instances_reporters not set')
     end
@@ -168,6 +164,10 @@ module CloudController
         user: SecurityContext.current_user,
         user_email: SecurityContext.current_user_email
       )
+    end
+
+    def app_event_repository
+      Repositories::AppEventRepository.from_security_context(SecurityContext)
     end
 
     def service_manager

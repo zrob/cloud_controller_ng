@@ -2,11 +2,11 @@ require 'spec_helper'
 
 module VCAP::CloudController
   RSpec.describe RouteMappingCreate do
-    let(:route_mapping_create) { described_class.new(user, user_email, app, route, process, message) }
+    subject(:route_mapping_create) { RouteMappingCreate.new(user_info, app, route, process, message) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: '7', email: '1@2.3') }
+
     let(:space) { app.space }
     let(:app) { AppModel.make }
-    let(:user) { double(:user, guid: '7') }
-    let(:user_email) { '1@2.3' }
     let(:process) { App.make(:process, app: app, type: process_type, ports: ports, health_check_type: 'none') }
     let(:process_type) { 'web' }
     let(:ports) { [8888] }
@@ -70,8 +70,6 @@ module VCAP::CloudController
           expect(event_repository).to have_received(:record_map_route).with(
             app,
             route,
-            user.guid,
-            user_email,
             route_mapping: route_mapping
           )
         end
@@ -230,7 +228,7 @@ module VCAP::CloudController
           let(:worker_message) { RouteMappingsCreateMessage.new({ app_port: 8888, relationships: { process: { type: 'worker' } } }) }
 
           it 'allows a new route mapping' do
-            described_class.new(user, user_email, app, route, worker_process, worker_message).add
+            RouteMappingCreate.new(user_info, app, route, worker_process, worker_message).add
             expect(app.reload.routes).to eq([route, route])
           end
         end

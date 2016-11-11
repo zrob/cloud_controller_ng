@@ -5,15 +5,10 @@ module VCAP::CloudController
     let(:app_event_repository) { instance_double(Repositories::AppEventRepository) }
     let(:route_event_repository) { instance_double(Repositories::RouteEventRepository) }
 
-    let(:user) { instance_double(User, guid: '1234') }
-    let(:user_email) { 'user@email.dads' }
-
     let(:route_delete_action) do
       RouteDelete.new(
         app_event_repository: app_event_repository,
         route_event_repository: route_event_repository,
-        user: user,
-        user_email: user_email
       )
     end
 
@@ -55,8 +50,8 @@ module VCAP::CloudController
 
           route_delete_action.delete_sync(route: route, recursive: recursive)
 
-          expect(app_event_repository).to have_received(:record_unmap_route).with(app, route, user.guid, user_email, route_mapping: route_mapping).once
-          expect(app_event_repository).to have_received(:record_unmap_route).with(app_2, route, user.guid, user_email, route_mapping: route_mapping_2).once
+          expect(app_event_repository).to have_received(:record_unmap_route).with(app, route, route_mapping: route_mapping).once
+          expect(app_event_repository).to have_received(:record_unmap_route).with(app_2, route, route_mapping: route_mapping_2).once
         end
       end
 

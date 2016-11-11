@@ -32,6 +32,7 @@ require 'vcap/sequel_add_association_dependencies_monkeypatch'
 require 'access/access'
 
 require 'cloud_controller/security_context'
+require 'cloud_controller/audit/user_info'
 require 'cloud_controller/jobs'
 require 'cloud_controller/background_job_environment'
 require 'cloud_controller/db_migrator'

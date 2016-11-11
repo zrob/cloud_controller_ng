@@ -2,9 +2,6 @@ require 'spec_helper'
 
 module VCAP::CloudController
   RSpec.describe AppBitsUploadController do
-    let(:app_event_repository) { Repositories::AppEventRepository.new }
-    before { CloudController::DependencyLocator.instance.register(:app_event_repository, app_event_repository) }
-
     describe 'PUT /v2/app/:id/bits' do
       let(:app_obj) do
         App.make
@@ -22,12 +19,17 @@ module VCAP::CloudController
 
       let(:headers) { headers_for(user) }
 
+      before do
+        set_current_user(user)
+      end
+
       def make_request
         put "/v2/apps/#{app_obj.guid}/bits", req_body, headers
       end
 
       context 'as an admin' do
-        let(:headers) { admin_headers }
+        let(:user) { make_user(admin: true) }
+        let(:headers) { admin_headers_for(user) }
         let(:req_body) { { resources: '[]', application: valid_zip } }
 
         it 'allows upload even if app_bits_upload flag is disabled' do
@@ -355,7 +357,8 @@ module VCAP::CloudController
       context 'when the app is a docker app' do
         let(:app_obj) { App.make(app: AppModel.make(:docker)) }
         let(:req_body) { { resources: '[]', application: valid_zip } }
-        let(:headers) { admin_headers }
+        let(:user) { make_user(admin: true) }
+        let(:headers) { admin_headers_for(user) }
 
         it 'raises an error' do
           make_request
@@ -371,31 +374,18 @@ module VCAP::CloudController
       let(:dest_app) { App.make }
       let(:src_app) { AppFactory.make }
       let(:json_payload) { { 'source_app_guid' => src_app.guid }.to_json }
+      let(:user) { make_user(admin: true) }
+      let(:headers) { admin_headers_for(user) }
 
-      class FakeCopier
-        def initialize(src_app, dest_app, app_event_repo, user, email)
-          @src_app        = src_app
-          @dest_app       = dest_app
-          @app_event_repo = app_event_repo
-          @user           = user
-          @email          = email
-        end
-
-        def perform
-          FakeCopier.copies << [@src_app, @dest_app, @app_event_repo, @user, @email]
-        end
-
-        class << self
-          attr_accessor :copies
-        end
-        self.copies = []
+      before do
+        set_current_user_as_admin(user: user)
       end
 
       context 'when no source guid is sent' do
         let(:json_payload) { '{}' }
 
         it 'fails to copy application bits' do
-          post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, admin_headers
+          post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers
 
           expect(last_response.status).to eq(400)
 
@@ -407,7 +397,7 @@ module VCAP::CloudController
       context 'when a source guid is supplied' do
         it 'returns a delayed job' do
           expect {
-            post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, admin_headers
+            post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers
           }.to change {
             Delayed::Job.count
           }.by(1)
@@ -432,7 +422,7 @@ module VCAP::CloudController
 
         it 'records audit events on the source and destination apps' do
           expect {
-            post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, admin_headers
+            post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers
           }.to change {
             Event.count
           }.by(2)
@@ -446,15 +436,13 @@ module VCAP::CloudController
 
         context 'validation permissions' do
           it 'allows an admin' do
-            stub_const('VCAP::CloudController::Jobs::Runtime::AppBitsCopier', FakeCopier)
-            post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, admin_headers
-
+            post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers
             expect(last_response.status).to eq(201)
           end
 
           it 'disallows when not a developer of destination space' do
-            stub_const('VCAP::CloudController::Jobs::Runtime::AppBitsCopier', FakeCopier)
             user = make_developer_for_space(src_app.space)
+            set_current_user(user)
 
             post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers_for(user)
 
@@ -462,8 +450,8 @@ module VCAP::CloudController
           end
 
           it 'disallows when not a developer of source space' do
-            stub_const('VCAP::CloudController::Jobs::Runtime::AppBitsCopier', FakeCopier)
             user = make_developer_for_space(dest_app.space)
+            set_current_user(user)
 
             post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers_for(user)
 
@@ -471,10 +459,10 @@ module VCAP::CloudController
           end
 
           it 'allows when a developer of both spaces' do
-            stub_const('VCAP::CloudController::Jobs::Runtime::AppBitsCopier', FakeCopier)
             user = make_developer_for_space(dest_app.space)
             src_app.organization.add_user(user)
             src_app.space.add_developer(user)
+            set_current_user(user)
 
             post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers_for(user)
             expect(last_response.status).to eq(201)

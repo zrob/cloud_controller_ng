@@ -2,9 +2,8 @@ require 'spec_helper'
 
 module VCAP::CloudController
   RSpec.describe RouteMappingDelete do
-    subject(:route_mapping_delete) { described_class.new(user, user_email) }
-    let(:user) { User.make }
-    let(:user_email) { 'user_email' }
+    subject(:route_mapping_delete) { described_class.new(user_info) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user_guid', email: 'user_email') }
     let(:space) { Space.make }
     let(:app) { AppModel.make(space: space) }
     let(:route) { Route.make(space: space) }
@@ -43,7 +42,7 @@ module VCAP::CloudController
         let(:event_repository) { instance_double(Repositories::AppEventRepository) }
 
         before do
-          allow(Repositories::AppEventRepository).to receive(:new).and_return(event_repository)
+          allow(Repositories::AppEventRepository).to receive(:new).with(user_info).and_return(event_repository)
           allow(event_repository).to receive(:record_unmap_route)
         end
 
@@ -53,8 +52,6 @@ module VCAP::CloudController
           expect(event_repository).to have_received(:record_unmap_route).with(
             app,
             route,
-            user.guid,
-            user_email,
             route_mapping: route_mapping
           )
         end

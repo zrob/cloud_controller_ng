@@ -9,15 +9,6 @@ module VCAP::CloudController
     # fails
     allow_unauthenticated_access only: [:ssh_access, :ssh_access_with_index]
 
-    def self.dependencies
-      [:app_event_repository]
-    end
-
-    def inject_dependencies(dependencies)
-      super
-      @app_event_repository = dependencies.fetch(:app_event_repository)
-    end
-
     model_class_name :App
 
     get '/internal/apps/:guid/ssh_access/:index', :ssh_access_with_index
@@ -49,16 +40,15 @@ module VCAP::CloudController
     private
 
     def record_ssh_unauthorized_event(app, index)
-      current_user = SecurityContext.current_user || nil
-      current_user_guid = current_user.nil? ? NON_EXISTENT_CURRENT_USER : current_user.guid
-      current_user_email = SecurityContext.current_user_email || NON_EXISTENT_CURRENT_USER_EMAIL
-      @app_event_repository.record_app_ssh_unauthorized(app, current_user_guid, current_user_email, index)
+      user_info = Audit::UserInfo.from_security_context(SecurityContext)
+      user_info.guid  ||= NON_EXISTENT_CURRENT_USER
+      user_info.email ||= NON_EXISTENT_CURRENT_USER_EMAIL
+
+      Repositories::AppEventRepository.new(user_info).record_app_ssh_unauthorized(app, index)
     end
 
     def record_ssh_authorized_event(app, index)
-      current_user = SecurityContext.current_user
-      current_user_email = SecurityContext.current_user_email
-      @app_event_repository.record_app_ssh_authorized(app, current_user.guid, current_user_email, index)
+      Repositories::AppEventRepository.new(audit_user_info).record_app_ssh_authorized(app, index)
     end
   end
 end

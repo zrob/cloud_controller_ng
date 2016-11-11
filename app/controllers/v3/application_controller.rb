@@ -102,6 +102,10 @@ class ApplicationController < ActionController::Base
     VCAP::CloudController::Permissions.new(current_user).readable_org_guids
   end
 
+  def audit_user_info
+    @audit_user_info ||= VCAP::CloudController::Audit::UserInfo.from_security_context(SecurityContext)
+  end
+
   ###
   ### FILTERS
   ###

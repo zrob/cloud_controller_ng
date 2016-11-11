@@ -150,9 +150,7 @@ module VCAP::CloudController
 
       route_delete_action = RouteDelete.new(
         app_event_repository:   app_event_repository,
-        route_event_repository: route_event_repository,
-        user:                   SecurityContext.current_user,
-        user_email:             SecurityContext.current_user_email)
+        route_event_repository: route_event_repository)
 
       if async?
         job = route_delete_action.delete_async(route: route, recursive: recursive_delete?)
@@ -232,7 +230,7 @@ module VCAP::CloudController
       raise CloudController::Errors::ApiError.new_from_details('AppNotFound', app_guid) unless app
 
       begin
-        V2::RouteMappingCreate.new(SecurityContext.current_user, SecurityContext.current_user_email, route, app).add(request_attrs)
+        V2::RouteMappingCreate.new(audit_user_info, route, app).add(request_attrs)
       rescue RouteMappingCreate::DuplicateRouteMapping
         # the route is already mapped, consider the request successful
       rescue V2::RouteMappingCreate::TcpRoutingDisabledError
@@ -262,7 +260,7 @@ module VCAP::CloudController
       raise CloudController::Errors::ApiError.new_from_details('AppNotFound', app_guid) unless process
 
       route_mapping = RouteMappingModel.find(app: process.app, route: route, process: process)
-      RouteMappingDelete.new(SecurityContext.current_user, SecurityContext.current_user_email).delete(route_mapping)
+      RouteMappingDelete.new(audit_user_info).delete(route_mapping)
 
       after_update(route)
 

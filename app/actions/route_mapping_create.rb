@@ -10,13 +10,12 @@ module VCAP::CloudController
     UNAVAILABLE_APP_PORT_MESSAGE_FORMAT = 'Port %s is not available on the app\'s process'.freeze
     NO_PORT_REQUESTED                   = 'Port must be specified when mapping to a non-web process'.freeze
 
-    def initialize(user, user_email, app, route, process, message)
-      @user       = user
-      @user_email = user_email
-      @app        = app
-      @route      = route
-      @process    = process
-      @message    = message
+    def initialize(user_info, app, route, process, message)
+      @user_info = user_info
+      @app       = app
+      @route     = route
+      @process   = process
+      @message   = message
     end
 
     def add
@@ -38,8 +37,6 @@ module VCAP::CloudController
         app_event_repository.record_map_route(
           @app,
           @route,
-          @user.try(:guid),
-          @user_email,
           route_mapping: route_mapping
         )
       end
@@ -96,7 +93,7 @@ module VCAP::CloudController
     end
 
     def app_event_repository
-      Repositories::AppEventRepository.new
+      Repositories::AppEventRepository.new(@user_info)
     end
 
     def raise_unavailable_port!

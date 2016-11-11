@@ -3,9 +3,8 @@ require 'actions/app_delete'
 
 module VCAP::CloudController
   RSpec.describe AppDelete do
-    subject(:app_delete) { AppDelete.new(user.guid, user_email) }
-    let(:user) { User.make }
-    let(:user_email) { 'user@example.com' }
+    subject(:app_delete) { AppDelete.new(user_info) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user_guid', email: 'user_email') }
 
     let!(:app) { AppModel.make }
     let!(:app_dataset) { app }
@@ -22,8 +21,6 @@ module VCAP::CloudController
         expect_any_instance_of(Repositories::AppEventRepository).to receive(:record_app_delete_request).with(
           app,
           app.space,
-          user.guid,
-          user_email
         )
 
         app_delete.delete(app_dataset)

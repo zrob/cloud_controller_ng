@@ -129,13 +129,11 @@ module VCAP::CloudController
         raise CloudController::Errors::ApiError.new_from_details('AssociationNotEmpty', 'service_bindings', app.class.table_name)
       end
 
-      AppDelete.new(SecurityContext.current_user.guid, SecurityContext.current_user_email).delete_without_event(app.app)
+      AppDelete.new(audit_user_info).delete_without_event(app.app)
 
       @app_event_repository.record_app_delete_request(
         app,
         space,
-        SecurityContext.current_user.guid,
-        SecurityContext.current_user_email,
         recursive_delete?)
 
       [HTTP::NO_CONTENT, nil]
@@ -223,7 +221,7 @@ module VCAP::CloudController
         set_header('X-App-Staging-Log', stager_response.streaming_log_url)
       end
 
-      @app_event_repository.record_app_update(app, app.space, SecurityContext.current_user.guid, SecurityContext.current_user_email, request_attrs)
+      @app_event_repository.record_app_update(app, app.space, request_attrs)
     end
 
     def update(guid)
@@ -258,8 +256,6 @@ module VCAP::CloudController
       @app_event_repository.record_app_create(
         process,
         process.space,
-        SecurityContext.current_user.guid,
-        SecurityContext.current_user_email,
         request_attrs)
 
       [
@@ -283,7 +279,7 @@ module VCAP::CloudController
       raise CloudController::Errors::ApiError.new_from_details('RouteNotFound', route_guid) unless route
 
       begin
-        V2::RouteMappingCreate.new(SecurityContext.current_user, SecurityContext.current_user_email, route, app).add(request_attrs)
+        V2::RouteMappingCreate.new(audit_user_info, route, app).add(request_attrs)
       rescue RouteMappingCreate::DuplicateRouteMapping
         # the route is already mapped, consider the request successful
       rescue V2::RouteMappingCreate::TcpRoutingDisabledError
@@ -313,7 +309,7 @@ module VCAP::CloudController
       raise CloudController::Errors::ApiError.new_from_details('RouteNotFound', route_guid) unless route
 
       route_mapping = RouteMappingModel.find(app: process.app, route: route, process: process)
-      RouteMappingDelete.new(SecurityContext.current_user, SecurityContext.current_user_email).delete(route_mapping)
+      RouteMappingDelete.new(audit_user_info).delete(route_mapping)
 
       after_update(process)
 

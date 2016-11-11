@@ -133,7 +133,7 @@ module VCAP::CloudController
 
       @space_event_repository.record_space_delete_request(space, SecurityContext.current_user, SecurityContext.current_user_email, recursive_delete?)
 
-      delete_action = SpaceDelete.new(current_user.guid, current_user_email, @services_event_repository)
+      delete_action = SpaceDelete.new(audit_user_info, @services_event_repository)
       deletion_job = VCAP::CloudController::Jobs::DeleteActionJob.new(Space, guid, delete_action)
       enqueue_deletion_job(deletion_job)
     end

@@ -3,10 +3,9 @@ require 'actions/app_update'
 
 module VCAP::CloudController
   RSpec.describe AppUpdate do
+    subject(:app_update) { AppUpdate.new(user_info) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: '1337', email: 'cool_dude@hoopy_frood.com') }
     let(:app_model) { AppModel.make(name: app_name, environment_variables: environment_variables) }
-    let(:user) { double(:user, guid: '1337') }
-    let(:user_email) { 'cool_dude@hoopy_frood.com' }
-    let(:app_update) { AppUpdate.new(user, user_email) }
     let(:buildpack) { 'http://original.com' }
     let(:app_name) { 'original name' }
     let(:environment_variables) { { 'original' => 'value' } }
@@ -28,8 +27,6 @@ module VCAP::CloudController
         expect_any_instance_of(Repositories::AppEventRepository).to receive(:record_app_update).with(
           app_model,
           app_model.space,
-          user.guid,
-          user_email,
           {
             'name'                  => 'new name',
             'environment_variables' => { 'MYVAL' => 'new-val' },

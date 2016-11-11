@@ -2,11 +2,9 @@ module VCAP::CloudController
   class RouteDelete
     class ServiceInstanceAssociationError < StandardError; end
 
-    def initialize(app_event_repository:, route_event_repository:, user:, user_email:)
+    def initialize(app_event_repository:, route_event_repository:)
       @app_event_repository   = app_event_repository
       @route_event_repository = route_event_repository
-      @user                   = user
-      @user_email             = user_email
     end
 
     def delete_sync(route:, recursive:)
@@ -35,8 +33,6 @@ module VCAP::CloudController
         app_event_repository.record_unmap_route(
           route_mapping.app,
           route,
-          user.guid,
-          user_email,
           route_mapping: route_mapping
         )
       end

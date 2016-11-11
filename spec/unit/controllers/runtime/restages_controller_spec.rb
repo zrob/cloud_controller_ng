@@ -2,9 +2,6 @@ require 'spec_helper'
 
 module VCAP::CloudController
   RSpec.describe RestagesController do
-    let(:app_event_repository) { Repositories::AppEventRepository.new }
-    before { CloudController::DependencyLocator.instance.register(:app_event_repository, app_event_repository) }
-
     describe 'POST /v2/apps/:id/restage' do
       let!(:application) { AppFactory.make }
 
@@ -98,7 +95,10 @@ module VCAP::CloudController
         end
 
         describe 'events' do
+          let(:app_event_repository) { Repositories::AppEventRepository.new(Audit::UserInfo.from_security_context(SecurityContext)) }
+
           before do
+            allow(CloudController::DependencyLocator.instance).to receive(:app_event_repository).and_return(app_event_repository)
             allow(app_event_repository).to receive(:record_app_restage).and_call_original
           end
 
@@ -109,7 +109,7 @@ module VCAP::CloudController
               }.to change { Event.count }.by(1)
 
               expect(last_response.status).to eq(201)
-              expect(app_event_repository).to have_received(:record_app_restage).with(application, account.guid, SecurityContext.current_user_email)
+              expect(app_event_repository).to have_received(:record_app_restage).with(application)
             end
           end
 
