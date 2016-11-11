@@ -1,11 +1,12 @@
 module VCAP::CloudController
   module Repositories
     class RouteEventRepository
-      attr_reader :user, :current_user_email
+      def initialize(user_info)
+        @user_info = user_info
+      end
 
-      def initialize(user:, user_email:)
-        @user               = user
-        @current_user_email = user_email
+      def self.from_security_context(security_context)
+        new(VCAP::CloudController::Audit::UserInfo.from_security_context(security_context))
       end
 
       def record_route_create(route, request_attrs)
@@ -15,9 +16,9 @@ module VCAP::CloudController
           actee:      route.guid,
           actee_type: 'route',
           actee_name: route.host,
-          actor:      @user.guid,
+          actor:      @user_info.guid,
           actor_type: 'user',
-          actor_name: @current_user_email,
+          actor_name: @user_info.email,
           timestamp:  Sequel::CURRENT_TIMESTAMP,
           metadata:   {
             request: request_attrs
@@ -32,9 +33,9 @@ module VCAP::CloudController
           actee:      route.guid,
           actee_type: 'route',
           actee_name: route.host,
-          actor:      @user.guid,
+          actor:      @user_info.guid,
           actor_type: 'user',
-          actor_name: @current_user_email,
+          actor_name: @user_info.email,
           timestamp:  Sequel::CURRENT_TIMESTAMP,
           metadata:   {
             request: request_attrs
@@ -48,9 +49,9 @@ module VCAP::CloudController
           actee:             route.guid,
           actee_type:        'route',
           actee_name:        route.host,
-          actor:             @user.guid,
+          actor:             @user_info.guid,
           actor_type:        'user',
-          actor_name:        @current_user_email,
+          actor_name:        @user_info.email,
           timestamp:         Sequel::CURRENT_TIMESTAMP,
           space_guid:        route.space.guid,
           organization_guid: route.space.organization.guid,

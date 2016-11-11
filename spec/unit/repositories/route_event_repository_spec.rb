@@ -3,12 +3,12 @@ require 'spec_helper'
 module VCAP::CloudController
   module Repositories
     RSpec.describe RouteEventRepository do
-      let(:user) { User.make }
+      subject(:route_event_repository) { RouteEventRepository.new(user_info) }
+
+      let(:user_info) { Audit::UserInfo.new(guid: 'user-guid', email: user_email) }
       let(:route) { Route.make }
       let(:request_attrs) { { 'host' => 'dora', 'domain_guid' => route.domain.guid, 'space_guid' => route.space.guid } }
       let(:user_email) { 'some@email.com' }
-
-      subject(:route_event_repository) { RouteEventRepository.new(user: user, user_email: user_email) }
 
       describe '#record_route_create' do
         it 'records event correctly' do
@@ -19,7 +19,7 @@ module VCAP::CloudController
           expect(event.actee).to eq(route.guid)
           expect(event.actee_type).to eq('route')
           expect(event.actee_name).to eq(route.host)
-          expect(event.actor).to eq(user.guid)
+          expect(event.actor).to eq('user-guid')
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
           expect(event.metadata).to eq({ 'request' => request_attrs })
@@ -45,7 +45,7 @@ module VCAP::CloudController
           expect(event.actee).to eq(route.guid)
           expect(event.actee_type).to eq('route')
           expect(event.actee_name).to eq(route.host)
-          expect(event.actor).to eq(user.guid)
+          expect(event.actor).to eq('user-guid')
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
           expect(event.metadata).to eq({ 'request' => request_attrs })
@@ -67,7 +67,7 @@ module VCAP::CloudController
           expect(event.actee).to eq(route.guid)
           expect(event.actee_type).to eq('route')
           expect(event.actee_name).to eq(route.host)
-          expect(event.actor).to eq(user.guid)
+          expect(event.actor).to eq('user-guid')
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
           expect(event.metadata).to eq({ 'request' => { 'recursive' => true } })

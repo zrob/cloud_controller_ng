@@ -178,24 +178,11 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
       expected_request
     end
 
-    let(:app_event_repository) do
-      VCAP::CloudController::Repositories::AppEventRepository.new(VCAP::CloudController::Audit::UserInfo.new(guid: test_user.guid, email: test_user_email))
-    end
-
-    let(:space_event_repository) do
-      VCAP::CloudController::Repositories::SpaceEventRepository.new
-    end
-
-    let(:route_event_repository) do
-      VCAP::CloudController::Repositories::RouteEventRepository.new(
-        user: test_user,
-        user_email: test_user_email,
-      )
-    end
-
-    let(:service_event_repository) do
-      VCAP::CloudController::Repositories::ServiceEventRepository.new(user: test_user, user_email: test_user_email)
-    end
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: test_user.guid, email: test_user_email) }
+    let(:app_event_repository) { VCAP::CloudController::Repositories::AppEventRepository.new(user_info) }
+    let(:route_event_repository) { VCAP::CloudController::Repositories::RouteEventRepository.new(user_info) }
+    let(:space_event_repository) { VCAP::CloudController::Repositories::SpaceEventRepository.new }
+    let(:service_event_repository) { VCAP::CloudController::Repositories::ServiceEventRepository.new(user: test_user, user_email: test_user_email) }
 
     example 'List App Create Events' do
       app_event_repository.record_app_create(test_app, test_app.space, app_request)
