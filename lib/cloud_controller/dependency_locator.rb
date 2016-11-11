@@ -157,7 +157,10 @@ module CloudController
     end
 
     def route_event_repository
-      Repositories::RouteEventRepository.new
+      Repositories::RouteEventRepository.new(
+        user: SecurityContext.current_user,
+        user_email: SecurityContext.current_user_email
+      )
     end
 
     def services_event_repository

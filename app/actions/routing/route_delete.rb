@@ -28,8 +28,6 @@ module VCAP::CloudController
 
       route_event_repository.record_route_delete_request(
         route,
-        user,
-        user_email,
         recursive
       )
 

@@ -35,7 +35,7 @@ module VCAP::CloudController
       it 'creates a route delete audit event' do
         route_delete_action.delete_sync(route: route, recursive: recursive)
 
-        expect(route_event_repository).to have_received(:record_route_delete_request).with(route, user, user_email, false)
+        expect(route_event_repository).to have_received(:record_route_delete_request).with(route, false)
       end
 
       context 'when there are route mappings' do

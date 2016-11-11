@@ -187,7 +187,10 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     let(:route_event_repository) do
-      VCAP::CloudController::Repositories::RouteEventRepository.new
+      VCAP::CloudController::Repositories::RouteEventRepository.new(
+        user: test_user,
+        user_email: test_user_email,
+      )
     end
 
     let(:service_event_repository) do
@@ -403,7 +406,7 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Route Create Events' do
-      route_event_repository.record_route_create(test_route, test_user, test_user_email, route_request)
+      route_event_repository.record_route_create(test_route, route_request)
 
       client.get '/v2/events?q=type:audit.route.create', {}, headers
       expect(status).to eq(200)
@@ -420,7 +423,7 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Route Update Events' do
-      route_event_repository.record_route_update(test_route, test_user, test_user_email, route_request)
+      route_event_repository.record_route_update(test_route, route_request)
 
       client.get '/v2/events?q=type:audit.route.update', {}, headers
       expect(status).to eq(200)
@@ -437,7 +440,7 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Route Delete Events' do
-      route_event_repository.record_route_delete_request(test_route, test_user, test_user_email, true)
+      route_event_repository.record_route_delete_request(test_route, true)
 
       client.get '/v2/events?q=type:audit.route.delete-request', {}, headers
       expect(status).to eq(200)

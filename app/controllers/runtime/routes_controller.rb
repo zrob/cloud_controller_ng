@@ -211,11 +211,11 @@ module VCAP::CloudController
     end
 
     def after_create(route)
-      @route_event_repository.record_route_create(route, SecurityContext.current_user, SecurityContext.current_user_email, request_attrs)
+      @route_event_repository.record_route_create(route, request_attrs)
     end
 
     def after_update(route)
-      @route_event_repository.record_route_update(route, SecurityContext.current_user, SecurityContext.current_user_email, request_attrs)
+      @route_event_repository.record_route_update(route, request_attrs)
     end
 
     put '/v2/routes/:route_guid/apps/:app_guid', :add_app

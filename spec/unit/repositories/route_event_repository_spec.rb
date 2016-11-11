@@ -8,11 +8,11 @@ module VCAP::CloudController
       let(:request_attrs) { { 'host' => 'dora', 'domain_guid' => route.domain.guid, 'space_guid' => route.space.guid } }
       let(:user_email) { 'some@email.com' }
 
-      subject(:route_event_repository) { RouteEventRepository.new }
+      subject(:route_event_repository) { RouteEventRepository.new(user: user, user_email: user_email) }
 
       describe '#record_route_create' do
         it 'records event correctly' do
-          event = route_event_repository.record_route_create(route, user, user_email, request_attrs)
+          event = route_event_repository.record_route_create(route, request_attrs)
           event.reload
           expect(event.space).to eq(route.space)
           expect(event.type).to eq('audit.route.create')
@@ -26,8 +26,10 @@ module VCAP::CloudController
         end
 
         context 'when the user email is unknown' do
+          let(:user_email) { nil }
+
           it 'leaves actor name empty' do
-            event = route_event_repository.record_route_create(route, user, nil, request_attrs)
+            event = route_event_repository.record_route_create(route, request_attrs)
             event.reload
             expect(event.actor_name).to eq(nil)
           end
@@ -36,7 +38,7 @@ module VCAP::CloudController
 
       describe '#record_route_update' do
         it 'records event correctly' do
-          event = route_event_repository.record_route_update(route, user, user_email, request_attrs)
+          event = route_event_repository.record_route_update(route, request_attrs)
           event.reload
           expect(event.space).to eq(route.space)
           expect(event.type).to eq('audit.route.update')
@@ -58,7 +60,7 @@ module VCAP::CloudController
         end
 
         it 'records event correctly' do
-          event = route_event_repository.record_route_delete_request(route, user, user_email, recursive)
+          event = route_event_repository.record_route_delete_request(route, recursive)
           event.reload
           expect(event.space).to eq(route.space)
           expect(event.type).to eq('audit.route.delete-request')
