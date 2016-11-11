@@ -371,14 +371,15 @@ module VCAP::CloudController
     end
 
     describe 'POST /v2/apps/:guid/copy_bits' do
-      let(:dest_app) { App.make }
-      let(:src_app) { AppFactory.make }
+      let(:space) { Space.make }
+      let(:dest_app) { AppFactory.make(space: space) }
+      let(:src_app) { AppFactory.make(space: space) }
       let(:json_payload) { { 'source_app_guid' => src_app.guid }.to_json }
-      let(:user) { make_user(admin: true) }
-      let(:headers) { admin_headers_for(user) }
+      let(:user) { make_developer_for_space(space) }
+      let(:headers) { headers_for(user) }
 
       before do
-        set_current_user_as_admin(user: user)
+        set_current_user(user)
       end
 
       context 'when no source guid is sent' do
@@ -428,42 +429,45 @@ module VCAP::CloudController
           }.by(2)
 
           source_event = Event.find(actee: src_app.guid)
-          dest_event = Event.find(actee: dest_app.guid)
+          dest_event   = Event.find(actee: dest_app.guid)
 
           expect(source_event.type).to eq('audit.app.copy-bits')
           expect(dest_event.type).to eq('audit.app.copy-bits')
         end
 
         context 'validation permissions' do
-          it 'allows an admin' do
-            post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers
-            expect(last_response.status).to eq(201)
+          context 'admin' do
+            before do
+              set_current_user_as_admin(user: user)
+            end
+
+            it 'succeeds' do
+              post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, admin_headers_for(user)
+              expect(last_response.status).to eq(201)
+            end
           end
 
-          it 'disallows when not a developer of destination space' do
-            user = make_developer_for_space(src_app.space)
-            set_current_user(user)
+          context 'when not a developer of destination space' do
+            let(:dest_app) { AppFactory.make(space: Space.make) }
 
-            post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers_for(user)
+            it 'disallows' do
+              post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers_for(user)
 
-            expect(last_response.status).to eq(403)
+              expect(last_response.status).to eq(403)
+            end
           end
 
-          it 'disallows when not a developer of source space' do
-            user = make_developer_for_space(dest_app.space)
-            set_current_user(user)
+          context 'when not a developer of source space' do
+            let(:src_app) { AppFactory.make(space: Space.make) }
 
-            post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers_for(user)
+            it 'disallows' do
+              post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers_for(user)
 
-            expect(last_response.status).to eq(403)
+              expect(last_response.status).to eq(403)
+            end
           end
 
           it 'allows when a developer of both spaces' do
-            user = make_developer_for_space(dest_app.space)
-            src_app.organization.add_user(user)
-            src_app.space.add_developer(user)
-            set_current_user(user)
-
             post "/v2/apps/#{dest_app.guid}/copy_bits", json_payload, headers_for(user)
             expect(last_response.status).to eq(201)
           end
