@@ -181,7 +181,7 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: test_user.guid, email: test_user_email) }
     let(:app_event_repository) { VCAP::CloudController::Repositories::AppEventRepository.new(user_info) }
     let(:route_event_repository) { VCAP::CloudController::Repositories::RouteEventRepository.new(user_info) }
-    let(:space_event_repository) { VCAP::CloudController::Repositories::SpaceEventRepository.new }
+    let(:space_event_repository) { VCAP::CloudController::Repositories::SpaceEventRepository.new(user_info) }
     let(:service_event_repository) { VCAP::CloudController::Repositories::ServiceEventRepository.new(user: test_user, user_email: test_user_email) }
 
     example 'List App Create Events' do
@@ -342,7 +342,7 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Space Create Events' do
-      space_event_repository.record_space_create(test_space, test_user, test_user_email, space_request)
+      space_event_repository.record_space_create(test_space, space_request)
 
       client.get '/v2/events?q=type:audit.space.create', {}, headers
       expect(status).to eq(200)
@@ -359,7 +359,7 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Space Update Events' do
-      space_event_repository.record_space_update(test_space, test_user, test_user_email, space_request)
+      space_event_repository.record_space_update(test_space, space_request)
 
       client.get '/v2/events?q=type:audit.space.update', {}, headers
       expect(status).to eq(200)
@@ -376,7 +376,7 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Space Delete Events' do
-      space_event_repository.record_space_delete_request(test_space, test_user, test_user_email, true)
+      space_event_repository.record_space_delete_request(test_space, true)
 
       client.get '/v2/events?q=type:audit.space.delete-request', {}, headers
       expect(status).to eq(200)

@@ -149,7 +149,7 @@ module CloudController
     end
 
     def space_event_repository
-      Repositories::SpaceEventRepository.new
+      Repositories::SpaceEventRepository.from_security_context(SecurityContext)
     end
 
     def route_event_repository
