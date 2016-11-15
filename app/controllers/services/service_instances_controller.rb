@@ -160,7 +160,7 @@ module VCAP::CloudController
 
       association_not_empty! if has_assocations && !recursive_delete?
 
-      deprovisioner = ServiceInstanceDeprovisioner.new(@services_event_repository, self, logger)
+      deprovisioner = ServiceInstanceDeprovisioner.new(@services_event_repository, audit_user_info, self, logger)
       delete_job = deprovisioner.deprovision_service_instance(service_instance, accepts_incomplete, async)
 
       if delete_job

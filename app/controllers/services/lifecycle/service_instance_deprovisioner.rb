@@ -1,15 +1,16 @@
 module VCAP::CloudController
   class ServiceInstanceDeprovisioner
-    def initialize(services_event_repository, access_validator, logger)
+    def initialize(services_event_repository, user_info, access_validator, logger)
       @services_event_repository = services_event_repository
       @access_validator = access_validator
       @logger = logger
+      @user_info = user_info
     end
 
     def deprovision_service_instance(service_instance, accepts_incomplete, async)
       delete_action = ServiceInstanceDelete.new(
         accepts_incomplete: accepts_incomplete,
-        event_repository: @services_event_repository
+        user_info: @user_info,
       )
 
       delete_job = build_delete_job(service_instance, delete_action)

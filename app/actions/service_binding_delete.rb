@@ -7,9 +7,8 @@ module VCAP::CloudController
 
     include VCAP::CloudController::LockCheck
 
-    def initialize(user_guid, user_email)
-      @user_guid  = user_guid
-      @user_email = user_email
+    def initialize(user_info)
+      @user_info = user_info
     end
 
     def single_delete_sync(service_binding)
@@ -30,7 +29,7 @@ module VCAP::CloudController
       errors = each_with_error_aggregation(bindings_to_delete) do |binding|
         raise_if_locked(binding.service_instance)
         remove_from_broker(binding)
-        Repositories::ServiceBindingEventRepository.record_delete(binding, @user_guid, @user_email)
+        Repositories::ServiceBindingEventRepository.new(@user_info).record_delete(binding)
         binding.destroy
       end
 

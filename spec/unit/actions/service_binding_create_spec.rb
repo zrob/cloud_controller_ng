@@ -4,9 +4,10 @@ require 'actions/service_binding_create'
 module VCAP::CloudController
   RSpec.describe ServiceBindingCreate do
     describe '#create' do
-      subject(:service_binding_create) { ServiceBindingCreate.new(user_guid, user_email) }
+      subject(:service_binding_create) { ServiceBindingCreate.new(user_info) }
       let(:user_guid) { 'some-guid' }
       let(:user_email) { 'are@youreddy.com' }
+      let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: user_guid, email: user_email) }
       let(:volume_mount_services_enabled) { true }
 
       let(:app) { AppModel.make }

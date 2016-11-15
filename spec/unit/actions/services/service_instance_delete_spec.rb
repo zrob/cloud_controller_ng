@@ -3,9 +3,8 @@ require 'actions/services/service_instance_delete'
 
 module VCAP::CloudController
   RSpec.describe ServiceInstanceDelete do
-    let(:event_repository) { Repositories::ServiceEventRepository.new(user: user, user_email: user_email) }
-
-    subject(:service_instance_delete) { ServiceInstanceDelete.new(event_repository: event_repository) }
+    subject(:service_instance_delete) { ServiceInstanceDelete.new(user_info: user_info) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user_guid', email: 'user_email') }
 
     describe '#delete' do
       let!(:service_instance_1) { ManagedServiceInstance.make(:routing) }
@@ -20,8 +19,6 @@ module VCAP::CloudController
       let!(:route_binding_2) { RouteBinding.make(route: route_2, service_instance: service_instance_2) }
 
       let!(:service_instance_dataset) { ServiceInstance.dataset }
-      let(:user) { User.make }
-      let(:user_email) { 'user@example.com' }
 
       before do
         [service_instance_1, service_instance_2].each do |service_instance|
@@ -84,7 +81,7 @@ module VCAP::CloudController
         subject(:service_instance_delete) do
           ServiceInstanceDelete.new(
             accepts_incomplete: true,
-            event_repository: event_repository,
+            user_info: user_info,
             multipart_delete: multipart_delete,
           )
         end

@@ -4,14 +4,16 @@ require 'repositories/service_binding_event_repository'
 module VCAP::CloudController
   module Repositories
     RSpec.describe ServiceBindingEventRepository do
+      subject(:repository) { ServiceBindingEventRepository.new(user_info) }
       let(:user_guid) { 'user-guid' }
       let(:user_email) { 'user@example.com' }
+      let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: user_guid, email: user_email) }
       let(:service_binding) { ServiceBinding.make }
 
       describe '.record_create' do
         it 'creates an audit.service_binding.create event' do
           request = { 'big' => 'data' }
-          event   = ServiceBindingEventRepository.record_create(service_binding, user_guid, user_email, request)
+          event   = repository.record_create(service_binding, request)
 
           expect(event.type).to eq('audit.service_binding.create')
           expect(event.actor).to eq('user-guid')
@@ -31,7 +33,7 @@ module VCAP::CloudController
 
         it 'censors metadata.request.data' do
           request = { 'big' => 'data', 'data' => 'lake', :data => 'tolerates symbols' }
-          event   = ServiceBindingEventRepository.record_create(service_binding, user_guid, user_email, request)
+          event   = repository.record_create(service_binding, request)
 
           expect(event.metadata[:request]).to eq(
             {
@@ -44,7 +46,7 @@ module VCAP::CloudController
 
       describe '.record_delete' do
         it 'creates an audit.service_binding.delete event' do
-          event = ServiceBindingEventRepository.record_delete(service_binding, user_guid, user_email)
+          event = repository.record_delete(service_binding)
 
           expect(event.type).to eq('audit.service_binding.delete')
           expect(event.actor).to eq('user-guid')
