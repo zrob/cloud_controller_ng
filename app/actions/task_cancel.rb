@@ -4,7 +4,11 @@ module VCAP::CloudController
   class TaskCancel
     class InvalidCancel < StandardError; end
 
-    def cancel(task:, user:, email:)
+    def initialize(user_info)
+      @user_info = user_info
+    end
+
+    def cancel(task)
       reject_invalid_states!(task)
 
       TaskModel.db.transaction do
@@ -12,7 +16,7 @@ module VCAP::CloudController
         task.state = TaskModel::CANCELING_STATE
         task.save
 
-        task_event_repository.record_task_cancel(task, user.guid, email)
+        Repositories::TaskEventRepository.new(@user_info).record_task_cancel(task)
       end
 
       nsync_client.cancel_task(task)
@@ -28,10 +32,6 @@ module VCAP::CloudController
 
     def nsync_client
       CloudController::DependencyLocator.instance.nsync_client
-    end
-
-    def task_event_repository
-      Repositories::TaskEventRepository.new
     end
   end
 end

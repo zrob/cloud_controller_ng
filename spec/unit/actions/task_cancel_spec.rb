@@ -4,8 +4,9 @@ require 'actions/task_cancel'
 module VCAP::CloudController
   RSpec.describe TaskCancel do
     describe '#cancel' do
-      subject(:task_cancel) { described_class.new }
+      subject(:task_cancel) { described_class.new(user_info) }
 
+      let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: user_guid, email: user_email) }
       let(:app) { AppModel.make }
       let(:task) { TaskModel.make(name: 'ursulina', command: 'echo hi', app_guid: app.guid, state: TaskModel::RUNNING_STATE) }
       let(:client) { instance_double(VCAP::CloudController::Diego::NsyncClient) }
@@ -20,17 +21,17 @@ module VCAP::CloudController
       end
 
       it 'cancels a running task and sets the task state to CANCELING' do
-        task_cancel.cancel(task: task, user: user, email: user_email)
+        task_cancel.cancel(task)
         expect(task.state).to eq TaskModel::CANCELING_STATE
       end
 
       it 'tells diego to cancel the task' do
-        task_cancel.cancel(task: task, user: user, email: user_email)
+        task_cancel.cancel(task)
         expect(client).to have_received(:cancel_task).with(task)
       end
 
       it 'creates a task cancel audit event' do
-        task_cancel.cancel(task: task, user: user, email: user_email)
+        task_cancel.cancel(task)
 
         event = Event.last
         expect(event.type).to eq('audit.app.task.cancel')
@@ -44,7 +45,7 @@ module VCAP::CloudController
           task.save
 
           expect {
-            task_cancel.cancel(task: task, user: user, email: user_email)
+            task_cancel.cancel(task)
           }.to raise_error(TaskCancel::InvalidCancel, "Task state is #{TaskModel::FAILED_STATE} and therefore cannot be canceled")
         end
 
@@ -53,7 +54,7 @@ module VCAP::CloudController
           task.save
 
           expect {
-            task_cancel.cancel(task: task, user: user, email: user_email)
+            task_cancel.cancel(task)
           }.to raise_error(TaskCancel::InvalidCancel, "Task state is #{TaskModel::SUCCEEDED_STATE} and therefore cannot be canceled")
         end
       end

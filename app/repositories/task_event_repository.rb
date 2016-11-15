@@ -2,22 +2,26 @@ module VCAP
   module CloudController
     module Repositories
       class TaskEventRepository
-        def record_task_create(task, user_guid, user_email)
-          record_event(task, user_guid, user_email, 'audit.app.task.create')
+        def initialize(user_info)
+          @user_info = user_info
         end
 
-        def record_task_cancel(task, user_guid, user_email)
-          record_event(task, user_guid, user_email, 'audit.app.task.cancel')
+        def record_task_create(task)
+          record_event(task, 'audit.app.task.create')
+        end
+
+        def record_task_cancel(task)
+          record_event(task, 'audit.app.task.cancel')
         end
 
         private
 
-        def record_event(task, user_guid, user_email, type)
+        def record_event(task, type)
           Event.create(
             type:              type,
-            actor:             user_guid,
+            actor:             @user_info.guid,
             actor_type:        'user',
-            actor_name:        user_email,
+            actor_name:        @user_info.email,
             actee:             task.app.guid,
             actee_type:        'app',
             actee_name:        task.app.name,

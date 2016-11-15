@@ -4,8 +4,8 @@ require 'actions/task_delete'
 module VCAP::CloudController
   RSpec.describe TaskDelete do
     describe '#delete' do
-      subject(:task_delete) { described_class.new('user-guid', 'user@example.com') }
-
+      subject(:task_delete) { described_class.new(user_info) }
+      let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user-guid', email: 'user@example.com') }
       let!(:task1) { TaskModel.make(state: TaskModel::SUCCEEDED_STATE) }
       let!(:task2) { TaskModel.make(state: TaskModel::SUCCEEDED_STATE) }
       let(:task_dataset) { TaskModel.all }

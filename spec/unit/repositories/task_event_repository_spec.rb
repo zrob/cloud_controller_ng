@@ -4,15 +4,16 @@ module VCAP
   module CloudController
     module Repositories
       RSpec.describe TaskEventRepository do
+        subject(:task_event_repository) { TaskEventRepository.new(user_info) }
+
         let(:task) { TaskModel.make }
         let(:user_guid) { 'user-guid' }
         let(:user_email) { 'user-email' }
-
-        subject(:task_event_repository) { TaskEventRepository.new }
+        let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: user_guid, email: user_email) }
 
         describe '#record_task_create' do
           it 'records task create event correctly' do
-            event = task_event_repository.record_task_create(task, user_guid, user_email)
+            event = task_event_repository.record_task_create(task)
 
             expect(event.type).to eq('audit.app.task.create')
             expect(event.actor).to eq(user_guid)
@@ -36,7 +37,7 @@ module VCAP
 
         describe '#record_task_cancel' do
           it 'records task cancel event correctly' do
-            event = task_event_repository.record_task_cancel(task, user_guid, user_email)
+            event = task_event_repository.record_task_cancel(task)
 
             expect(event.type).to eq('audit.app.task.cancel')
             expect(event.actor).to eq(user_guid)

@@ -65,7 +65,7 @@ RSpec.describe TasksController, type: :controller do
 
       post :create, app_guid: app_model.guid, body: req_body
 
-      expect(task_create).to have_received(:create).with(anything, anything, user.guid, 'user-email', droplet: nil)
+      expect(task_create).to have_received(:create).with(anything, anything, droplet: nil)
     end
 
     context 'permissions' do

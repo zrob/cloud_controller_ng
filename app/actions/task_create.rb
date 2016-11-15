@@ -7,11 +7,12 @@ module VCAP::CloudController
     class NoAssignedDroplet < TaskCreateError; end
     class MaximumDiskExceeded < TaskCreateError; end
 
-    def initialize(config)
+    def initialize(config, user_info)
       @config = config
+      @user_info = user_info
     end
 
-    def create(app, message, user_guid, user_email, droplet: nil)
+    def create(app, message, droplet: nil)
       droplet ||= app.droplet
       no_assigned_droplet! unless droplet
       validate_maximum_disk!(message)
@@ -34,7 +35,7 @@ module VCAP::CloudController
         app.update(max_task_sequence_id: app.max_task_sequence_id + 1)
 
         app_usage_event_repository.create_from_task(task, 'TASK_STARTED')
-        task_event_repository.record_task_create(task, user_guid, user_email)
+        task_event_repository.record_task_create(task)
       end
 
       dependency_locator.nsync_client.desire_task(task)
@@ -70,7 +71,7 @@ module VCAP::CloudController
     end
 
     def task_event_repository
-      Repositories::TaskEventRepository.new
+      Repositories::TaskEventRepository.new(@user_info)
     end
   end
 end
