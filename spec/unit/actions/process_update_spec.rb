@@ -3,8 +3,8 @@ require 'actions/process_update'
 
 module VCAP::CloudController
   RSpec.describe ProcessUpdate do
-    subject(:process_update) { ProcessUpdate.new(user_guid, user_email) }
-
+    subject(:process_update) { ProcessUpdate.new(user_info) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: user_guid, email: user_email) }
     let(:health_check) do
       {
         'type' => 'process',
@@ -68,12 +68,13 @@ module VCAP::CloudController
       end
 
       it 'creates an audit event' do
-        expect(Repositories::ProcessEventRepository).to receive(:record_update).with(
-          process,
-          user_guid,
-          user_email,
+        process_update.update(process, message)
+        event = Event.last
+        expect(event.type).to eq('audit.app.process.update')
+        expect(event.metadata['process_guid']).to eq(process.guid)
+        expect(event.metadata['request']).to eq(
           {
-            'command'      => 'new',
+            'command'      => 'PRIVATE DATA HIDDEN',
             'ports'        => [1234, 5678],
             'health_check' => {
               'type' => 'process',
@@ -83,8 +84,6 @@ module VCAP::CloudController
             }
           }
         )
-
-        process_update.update(process, message)
       end
 
       context 'when the process is invalid' do

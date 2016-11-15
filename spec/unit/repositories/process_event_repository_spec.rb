@@ -4,14 +4,17 @@ require 'repositories/process_event_repository'
 module VCAP::CloudController
   module Repositories
     RSpec.describe ProcessEventRepository do
+      subject(:repository) { ProcessEventRepository.new(user_info) }
+
+      let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: user_guid, email: email) }
       let(:app) { AppModel.make(name: 'zach-loves-kittens') }
       let(:process) { App.make(app: app, type: 'potato') }
       let(:user_guid) { 'user_guid' }
       let(:email) { 'user-email' }
 
-      describe '.record_create' do
+      describe '#record_create' do
         it 'creates a new audit.app.start event' do
-          event = ProcessEventRepository.record_create(process, user_guid, email)
+          event = repository.record_create(process)
           event.reload
 
           expect(event.type).to eq('audit.app.process.create')
@@ -31,9 +34,9 @@ module VCAP::CloudController
         end
       end
 
-      describe '.record_delete' do
+      describe '#record_delete' do
         it 'creates a new audit.app.delete event' do
-          event = ProcessEventRepository.record_delete(process, user_guid, email)
+          event = repository.record_delete(process)
           event.reload
 
           expect(event.type).to eq('audit.app.process.delete')
@@ -53,10 +56,10 @@ module VCAP::CloudController
         end
       end
 
-      describe '.record_scale' do
+      describe '#record_scale' do
         it 'creates a new audit.app.delete event' do
           request = { instances: 10, memory_in_mb: 512, disk_in_mb: 2048 }
-          event = ProcessEventRepository.record_scale(process, user_guid, email, request)
+          event = repository.record_scale(process, request)
           event.reload
 
           expect(event.type).to eq('audit.app.process.scale')
@@ -81,9 +84,9 @@ module VCAP::CloudController
         end
       end
 
-      describe '.record_update' do
+      describe '#record_update' do
         it 'creates a new audit.app.update event' do
-          event = ProcessEventRepository.record_update(process, user_guid, email, { anything: 'whatever' })
+          event = repository.record_update(process, { anything: 'whatever' })
           event.reload
 
           expect(event.type).to eq('audit.app.process.update')
@@ -106,7 +109,7 @@ module VCAP::CloudController
         end
 
         it 'redacts metadata.request.command' do
-          event = ProcessEventRepository.record_update(process, user_guid, email, { command: 'censor this' })
+          event = repository.record_update(process, { command: 'censor this' })
           event.reload
 
           expect(event.metadata).to match(hash_including(
@@ -117,10 +120,10 @@ module VCAP::CloudController
         end
       end
 
-      describe '.record_terminate' do
+      describe '#record_terminate' do
         it 'creates a new audit.app.terminate_instance event' do
           index = 0
-          event = ProcessEventRepository.record_terminate(process, user_guid, email, index)
+          event = repository.record_terminate(process, index)
           event.reload
 
           expect(event.type).to eq('audit.app.process.terminate_instance')
@@ -141,7 +144,7 @@ module VCAP::CloudController
         end
       end
 
-      describe '.record_crash' do
+      describe '#record_crash' do
         let(:crash_payload) {
           {
             'instance' => Sham.guid,
@@ -153,7 +156,7 @@ module VCAP::CloudController
         }
 
         it 'creates a new audit.app.crash event' do
-          event = ProcessEventRepository.record_crash(process, crash_payload)
+          event = repository.record_crash(process, crash_payload)
           event.reload
 
           expect(event.type).to eq('audit.app.process.crash')

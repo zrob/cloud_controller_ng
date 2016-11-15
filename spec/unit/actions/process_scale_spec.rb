@@ -3,7 +3,8 @@ require 'actions/process_scale'
 
 module VCAP::CloudController
   RSpec.describe ProcessScale do
-    subject(:process_scale) { ProcessScale.new(user, user_email, process, message) }
+    subject(:process_scale) { ProcessScale.new(user_info, process, message) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: user.guid, email: user_email) }
     let(:valid_message_params) { { instances: 2, memory_in_mb: 100, disk_in_mb: 200 } }
     let(:message) { ProcessScaleMessage.new(valid_message_params) }
     let(:app) { AppModel.make }
@@ -52,18 +53,12 @@ module VCAP::CloudController
       end
 
       it 'creates a process audit event' do
-        expect(Repositories::ProcessEventRepository).to receive(:record_scale).with(
-          process,
-            user.guid,
-            user_email,
-            {
-              'instances'    => 2,
-              'memory_in_mb' => 100,
-              'disk_in_mb'   => 200
-            }
-        )
-
         process_scale.scale
+
+        event = Event.last
+        expect(event.type).to eq('audit.app.process.scale')
+        expect(event.metadata['process_guid']).to eq(process.guid)
+        expect(event.metadata['request']).to eq({ 'instances' => 2, 'memory_in_mb' => 100, 'disk_in_mb' => 200 })
       end
 
       context 'when the process is invalid' do

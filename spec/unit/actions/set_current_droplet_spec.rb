@@ -15,7 +15,7 @@ module VCAP::CloudController
 
       before do
         app_model.add_droplet_by_guid(droplet_guid)
-        allow(CurrentProcessTypes).to receive(:new).with('user_guid', 'user_email').and_return(current_process_types)
+        allow(CurrentProcessTypes).to receive(:new).with(user_info).and_return(current_process_types)
         allow(current_process_types).to receive(:process_current_droplet).with(app_model)
       end
 

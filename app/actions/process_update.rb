@@ -2,9 +2,8 @@ module VCAP::CloudController
   class ProcessUpdate
     class InvalidProcess < StandardError; end
 
-    def initialize(user_guid, user_email)
-      @user_guid  = user_guid
-      @user_email = user_email
+    def initialize(user_info)
+      @user_info = user_info
     end
 
     def update(process, message)
@@ -18,7 +17,7 @@ module VCAP::CloudController
 
         process.save
 
-        Repositories::ProcessEventRepository.record_update(process, @user_guid, @user_email, message.audit_hash)
+        Repositories::ProcessEventRepository.new(@user_info).record_update(process, message.audit_hash)
       end
     rescue Sequel::ValidationFailed => e
       raise InvalidProcess.new(e.message)

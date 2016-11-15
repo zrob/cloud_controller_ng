@@ -3,7 +3,8 @@ require 'actions/process_create'
 
 module VCAP::CloudController
   RSpec.describe ProcessCreate do
-    subject(:process_create) { described_class.new(user_guid, user_email) }
+    subject(:process_create) { described_class.new(user_info) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: user_guid, email: user_email) }
     let(:app) { AppModel.make }
     let(:user_guid) { 'user-guid' }
     let(:user_email) { 'user@example.com' }

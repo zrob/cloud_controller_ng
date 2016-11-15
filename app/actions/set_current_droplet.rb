@@ -36,7 +36,7 @@ module VCAP::CloudController
     private
 
     def setup_processes(app)
-      CurrentProcessTypes.new(@user_info.guid, @user_info.email).process_current_droplet(app)
+      CurrentProcessTypes.new(@user_info).process_current_droplet(app)
     end
   end
 end

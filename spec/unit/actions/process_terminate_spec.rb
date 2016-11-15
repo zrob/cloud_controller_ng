@@ -3,11 +3,10 @@ require 'actions/process_terminate'
 
 module VCAP::CloudController
   RSpec.describe ProcessTerminate do
-    subject(:process_terminate) { ProcessTerminate.new(user_guid, user_email, process, index) }
+    subject(:process_terminate) { ProcessTerminate.new(user_info, process, index) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user-guid', email: 'user_email') }
     let(:app) { AppModel.make }
     let!(:process) { AppFactory.make(app: app) }
-    let(:user_guid) { 'user-guid' }
-    let(:user_email) { 'user@example.com' }
     let(:index) { 0 }
 
     let(:index_stopper) { double(IndexStopper, stop_index: true) }
@@ -24,13 +23,12 @@ module VCAP::CloudController
       end
 
       it 'creates an audit event' do
-        expect(Repositories::ProcessEventRepository).to receive(:record_terminate).with(
-          process,
-          user_guid,
-          user_email,
-          index
-        )
         process_terminate.terminate
+
+        event = Event.last
+        expect(event.type).to eq('audit.app.process.terminate_instance')
+        expect(event.metadata['process_guid']).to eq(process.guid)
+        expect(event.metadata['process_index']).to eq(index)
       end
 
       context 'when index is greater than the number of process instances' do

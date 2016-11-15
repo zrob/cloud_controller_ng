@@ -3,14 +3,18 @@ module VCAP::CloudController
     class ProcessEventRepository
       CENSORED_MESSAGE = 'PRIVATE DATA HIDDEN'.freeze
 
-      def self.record_create(process, user_guid, user_name)
+      def initialize(user_info)
+        @user_info = user_info
+      end
+
+      def record_create(process)
         Loggregator.emit(process.app.guid, "Added process: \"#{process.type}\"")
 
         create_event(
           process:    process,
           type:       'audit.app.process.create',
-          actor_guid: user_guid,
-          actor_name: user_name,
+          actor_guid: @user_info.guid,
+          actor_name: @user_info.email,
           metadata:   {
             process_guid: process.guid,
             process_type: process.type
@@ -18,14 +22,14 @@ module VCAP::CloudController
         )
       end
 
-      def self.record_delete(process, user_guid, user_name)
+      def record_delete(process)
         Loggregator.emit(process.app.guid, "Deleting process: \"#{process.type}\"")
 
         create_event(
           process:    process,
           type:       'audit.app.process.delete',
-          actor_guid: user_guid,
-          actor_name: user_name,
+          actor_guid: @user_info.guid,
+          actor_name: @user_info.email,
           metadata:   {
             process_guid: process.guid,
             process_type: process.type
@@ -33,7 +37,7 @@ module VCAP::CloudController
         )
       end
 
-      def self.record_update(process, user_guid, user_name, request)
+      def record_update(process, request)
         Loggregator.emit(process.app.guid, "Updating process: \"#{process.type}\"")
 
         request           = request.dup.symbolize_keys
@@ -42,8 +46,8 @@ module VCAP::CloudController
         create_event(
           process:    process,
           type:       'audit.app.process.update',
-          actor_guid: user_guid,
-          actor_name: user_name,
+          actor_guid: @user_info.guid,
+          actor_name: @user_info.email,
           metadata:   {
             process_guid: process.guid,
             process_type: process.type,
@@ -52,14 +56,14 @@ module VCAP::CloudController
         )
       end
 
-      def self.record_scale(process, user_guid, user_name, request)
+      def record_scale(process, request)
         Loggregator.emit(process.app.guid, "Scaling process: \"#{process.type}\"")
 
         create_event(
           process:    process,
           type:       'audit.app.process.scale',
-          actor_guid: user_guid,
-          actor_name: user_name,
+          actor_guid: @user_info.guid,
+          actor_name: @user_info.email,
           metadata:   {
             process_guid: process.guid,
             process_type: process.type,
@@ -68,14 +72,14 @@ module VCAP::CloudController
         )
       end
 
-      def self.record_terminate(process, user_guid, user_name, index)
+      def record_terminate(process, index)
         Loggregator.emit(process.app.guid, "Terminating process: \"#{process.type}\", index: \"#{index}\"")
 
         create_event(
           process:    process,
           type:       'audit.app.process.terminate_instance',
-          actor_guid: user_guid,
-          actor_name: user_name,
+          actor_guid: @user_info.guid,
+          actor_name: @user_info.email,
           metadata:   {
             process_guid:  process.guid,
             process_type:  process.type,
@@ -84,7 +88,7 @@ module VCAP::CloudController
         )
       end
 
-      def self.record_crash(process, crash_payload)
+      def record_crash(process, crash_payload)
         Loggregator.emit(process.app.guid, "Process has crashed with type: \"#{process.type}\"")
 
         create_event(
@@ -97,24 +101,22 @@ module VCAP::CloudController
         )
       end
 
-      class << self
-        private
+      private
 
-        def create_event(process:, type:, actor_guid:, actor_name:, metadata:, actor_type: 'user')
-          app = process.app
-          Event.create(
-            type:       type,
-            actee:      app.guid,
-            actee_type: 'app',
-            actee_name: app.name,
-            actor:      actor_guid,
-            actor_type: actor_type,
-            actor_name: actor_name,
-            timestamp:  Sequel::CURRENT_TIMESTAMP,
-            space:      process.space,
-            metadata:   metadata
-          )
-        end
+      def create_event(process:, type:, actor_guid:, actor_name:, metadata:, actor_type: 'user')
+        app = process.app
+        Event.create(
+          type:       type,
+          actee:      app.guid,
+          actee_type: 'app',
+          actee_name: app.name,
+          actor:      actor_guid,
+          actor_type: actor_type,
+          actor_name: actor_name,
+          timestamp:  Sequel::CURRENT_TIMESTAMP,
+          space:      process.space,
+          metadata:   metadata
+        )
       end
     end
   end

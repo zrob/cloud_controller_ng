@@ -6,9 +6,8 @@ module VCAP::CloudController
     class DropletNotFound < StandardError; end
     class ProcessTypesNotFound < StandardError; end
 
-    def initialize(user_guid, user_email)
-      @user_guid  = user_guid
-      @user_email = user_email
+    def initialize(user_info)
+      @user_info  = user_info
       @logger     = Steno.logger('cc.action.current_process_types')
     end
 
@@ -26,7 +25,7 @@ module VCAP::CloudController
 
     private
 
-    attr_reader :user_guid, :user_email
+    attr_reader :user_info
 
     def evaluate_processes(app, process_types)
       types = []
@@ -37,15 +36,15 @@ module VCAP::CloudController
       end
 
       processes = app.processes_dataset.where(Sequel.~(type: types))
-      ProcessDelete.new(user_guid, user_email).delete(processes.all)
+      ProcessDelete.new(user_info).delete(processes.all)
     end
 
     def add_or_update_process(app, type, command)
       existing_process = app.processes_dataset.where(type: type).first
       if existing_process
-        ProcessUpdate.new(user_guid, user_email).update(existing_process, ProcessUpdateMessage.new({ command: command }))
+        ProcessUpdate.new(user_info).update(existing_process, ProcessUpdateMessage.new({ command: command }))
       else
-        ProcessCreate.new(user_guid, user_email).create(app, { type: type, command: command })
+        ProcessCreate.new(user_info).create(app, { type: type, command: command })
       end
     end
   end
