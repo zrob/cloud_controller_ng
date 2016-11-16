@@ -24,7 +24,7 @@ RSpec.describe HealthCheckPolicy do
       let(:health_check_timeout) { -10 }
 
       it 'registers error' do
-        expect(validator).to validate_with_error(app, :health_check_timeout, :less_than_zero)
+        expect(validator).to validate_with_error(app, :health_check_timeout, :less_than_one)
       end
     end
 
@@ -33,6 +33,14 @@ RSpec.describe HealthCheckPolicy do
 
       it 'does not register error' do
         expect(validator).to validate_without_error(app)
+      end
+    end
+
+    context 'when a health_check_timeout is zero' do
+      let(:health_check_timeout) { 0 }
+
+      it 'registers error' do
+        expect(validator).to validate_with_error(app, :health_check_timeout, :less_than_one)
       end
     end
   end

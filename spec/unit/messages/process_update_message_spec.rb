@@ -136,13 +136,13 @@ module VCAP::CloudController
         end
       end
 
-      context 'when health_check timeout is less than zero' do
+      context 'when health_check timeout is less than one' do
         let(:params) do
           {
             health_check: {
               type: 'port',
               data: {
-                timeout: -7
+                timeout: -0
               }
             }
           }
@@ -152,7 +152,7 @@ module VCAP::CloudController
           message = ProcessUpdateMessage.new(params)
 
           expect(message).not_to be_valid
-          expect(message.errors[:health_check_timeout]).to include('must be greater than or equal to 0')
+          expect(message.errors[:health_check_timeout]).to include('must be greater than or equal to 1')
         end
       end
 
