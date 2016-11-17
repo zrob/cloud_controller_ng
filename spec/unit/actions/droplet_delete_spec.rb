@@ -3,11 +3,10 @@ require 'actions/droplet_delete'
 
 module VCAP::CloudController
   RSpec.describe DropletDelete do
-    let(:user) { User.make }
-    let(:user_email) { 'user@example.com' }
+    let(:user_info) { Audit::UserInfo.new(guid: 'user-guid', email: 'user-email') }
     let(:stagers) { instance_double(Stagers) }
 
-    subject(:droplet_delete) { DropletDelete.new(user, user_email, stagers) }
+    subject(:droplet_delete) { DropletDelete.new(user_info, stagers) }
 
     describe '#delete' do
       let!(:droplet) { DropletModel.make(droplet_hash: 'droplet_hash', state: DropletModel::STAGED_STATE) }
@@ -20,16 +19,11 @@ module VCAP::CloudController
       end
 
       it 'creates an audit event' do
-        expect(Repositories::DropletEventRepository).to receive(:record_delete).with(
-          instance_of(DropletModel),
-          user,
-          user_email,
-          droplet.app.name,
-          droplet.app.space_guid,
-          droplet.app.space.organization_guid
-        )
-
         droplet_delete.delete([droplet])
+
+        event = Event.last
+        expect(event.type).to eq('audit.app.droplet.delete')
+        expect(event.metadata['droplet_guid']).to eq(droplet.guid)
       end
 
       it 'schedules a job to the delete the blobstore item' do

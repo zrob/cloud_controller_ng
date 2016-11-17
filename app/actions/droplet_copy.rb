@@ -14,11 +14,12 @@ module VCAP::CloudController
       :docker_receipt_image
     ].freeze
 
-    def initialize(source_droplet)
+    def initialize(source_droplet, user_info)
       @source_droplet = source_droplet
+      @user_info = user_info
     end
 
-    def copy(destination_app, user_guid, user_email)
+    def copy(destination_app)
       raise InvalidCopyError.new('source droplet is not staged') unless @source_droplet.staged?
 
       new_droplet = DropletModel.new(state: DropletModel::COPYING_STATE, app: destination_app)
@@ -37,11 +38,9 @@ module VCAP::CloudController
           new_droplet.save
         end
 
-        Repositories::DropletEventRepository.record_create_by_copying(
+        Repositories::DropletEventRepository.new(@user_info).record_create_by_copying(
           new_droplet.guid,
           @source_droplet.guid,
-          user_guid,
-          user_email,
           destination_app.guid,
           destination_app.name,
           destination_app.space_guid,

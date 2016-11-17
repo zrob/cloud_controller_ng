@@ -47,7 +47,7 @@ class DropletsController < ApplicationController
 
     unauthorized! unless can_write?(space.guid)
 
-    droplet_deletor = DropletDelete.new(current_user.guid, current_user_email, stagers)
+    droplet_deletor = DropletDelete.new(audit_user_info, stagers)
     droplet_deletor.delete(droplet)
 
     head :no_content
@@ -64,7 +64,7 @@ class DropletsController < ApplicationController
     app_not_found! unless destination_app && can_read?(destination_app.space.guid, destination_app.organization.guid)
     unauthorized! unless can_write?(destination_app.space.guid)
 
-    droplet = DropletCopy.new(source_droplet).copy(destination_app, current_user.guid, current_user_email)
+    droplet = DropletCopy.new(source_droplet, audit_user_info).copy(destination_app)
 
     render status: :created, json: Presenters::V3::DropletPresenter.new(droplet)
   rescue DropletCopy::InvalidCopyError => e
@@ -88,12 +88,10 @@ class DropletsController < ApplicationController
     lifecycle = LifecycleProvider.provide(package, staging_message)
     unprocessable!(lifecycle.errors.full_messages) unless lifecycle.valid?
 
-    droplet = DropletCreate.new.create_and_stage(
+    droplet = DropletCreate.new(audit_user_info).create_and_stage(
       package:    package,
       lifecycle:  lifecycle,
       message:    staging_message,
-      user:       current_user,
-      user_email: current_user_email
     )
 
     render status: :created, json: Presenters::V3::DropletPresenter.new(droplet)

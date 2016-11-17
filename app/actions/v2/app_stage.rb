@@ -15,7 +15,7 @@ module VCAP::CloudController
 
         lifecycle = LifecycleProvider.provide(app.latest_package, message)
 
-        droplet_creator = DropletCreate.new
+        droplet_creator = DropletCreate.new(nil)
         droplet_creator.create_and_stage_without_event(
           package:             app.latest_package,
           lifecycle:           lifecycle,
