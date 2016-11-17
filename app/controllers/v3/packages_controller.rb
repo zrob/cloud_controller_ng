@@ -47,12 +47,10 @@ class PackagesController < ApplicationController
     bits_already_uploaded! if package.state != PackageModel::CREATED_STATE
 
     begin
-      PackageUpload.new.upload_async(
+      PackageUpload.new(audit_user_info).upload_async(
         message:    message,
         package:    package,
         config:     configuration,
-        user_guid:  current_user.guid,
-        user_email: current_user_email
       )
     rescue PackageUpload::InvalidPackage => e
       unprocessable!(e.message)
@@ -69,11 +67,7 @@ class PackagesController < ApplicationController
     unprocessable!('Package type must be bits.') unless package.type == 'bits'
     unprocessable!('Package has no bits to download.') unless package.state == 'READY'
 
-    VCAP::CloudController::Repositories::PackageEventRepository.record_app_package_download(
-      package,
-      current_user.guid,
-      current_user_email,
-    )
+    VCAP::CloudController::Repositories::PackageEventRepository.new(audit_user_info).record_app_package_download(package)
 
     send_package_blob(package)
   end
@@ -90,7 +84,7 @@ class PackagesController < ApplicationController
     package_not_found! unless package && can_read?(package.space.guid, package.space.organization.guid)
     unauthorized! unless can_write?(package.space.guid)
 
-    PackageDelete.new(current_user.guid, current_user_email).delete(package)
+    PackageDelete.new(audit_user_info).delete(package)
 
     head :no_content
   end
@@ -111,7 +105,7 @@ class PackagesController < ApplicationController
     app_not_found! unless app && can_read?(app.space.guid, app.organization.guid)
     unauthorized! unless can_write?(app.space.guid)
 
-    package = PackageCreate.create(message: message, user_guid: current_user.guid, user_email: current_user_email)
+    package = PackageCreate.new(audit_user_info).create(message: message)
 
     render status: :created, json: Presenters::V3::PackagePresenter.new(package)
   rescue PackageCreate::InvalidPackage => e
@@ -127,11 +121,9 @@ class PackagesController < ApplicationController
     package_not_found! unless source_package && can_read?(source_package.space.guid, source_package.space.organization.guid)
     unauthorized! unless can_write?(source_package.space.guid)
 
-    package = PackageCopy.new.copy(
+    package = PackageCopy.new(audit_user_info).copy(
       destination_app_guid: params[:app_guid],
       source_package:       source_package,
-      user_guid:            current_user.guid,
-      user_email:           current_user_email
     )
 
     render status: :created, json: Presenters::V3::PackagePresenter.new(package)

@@ -181,17 +181,6 @@ RSpec.describe PackagesController, type: :controller do
       expect(response.headers['Location']).to eq('http://package.example.com')
     end
 
-    it 'creates an audit event' do
-      allow(VCAP::CloudController::Repositories::PackageEventRepository).to receive(:record_app_package_download)
-      get :download, guid: package.guid
-
-      expect(VCAP::CloudController::Repositories::PackageEventRepository).to have_received(:record_app_package_download) do |package, user_guid, user_name|
-        expect(package).to eq package
-        expect(user_guid).to eq user.guid
-        expect(user_name).to eq 'utako'
-      end
-    end
-
     context 'when the package is not of type bits' do
       before do
         package.type = 'docker'
@@ -609,7 +598,7 @@ RSpec.describe PackagesController, type: :controller do
 
         context 'when the package is invalid' do
           before do
-            allow(VCAP::CloudController::PackageCreate).to receive(:create).and_raise(VCAP::CloudController::PackageCreate::InvalidPackage.new('err'))
+            allow_any_instance_of(VCAP::CloudController::PackageCreate).to receive(:create).and_raise(VCAP::CloudController::PackageCreate::InvalidPackage.new('err'))
           end
 
           it 'returns 422' do

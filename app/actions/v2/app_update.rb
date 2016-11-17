@@ -70,7 +70,7 @@ module VCAP::CloudController
 
         elsif docker_type_requested && !case_insensitive_equals(process.docker_image, request_attrs['docker_image'])
           create_message = PackageCreateMessage.new({ type: 'docker', app_guid: app.guid, data: { image: request_attrs['docker_image'] } })
-          PackageCreate.create_without_event(create_message)
+          PackageCreate.new(nil).create_without_event(create_message)
         end
       end
 

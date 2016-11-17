@@ -3,19 +3,18 @@ require 'actions/package_upload'
 
 module VCAP::CloudController
   RSpec.describe PackageUpload do
-    subject(:package_upload) { PackageUpload.new }
+    subject(:package_upload) { PackageUpload.new(user_info) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user_guid', email: 'user_email') }
 
     describe '#upload_async' do
       let(:package) { PackageModel.make(type: 'bits') }
       let(:message) { PackageUploadMessage.new({ 'bits_path' => '/tmp/path' }) }
       let(:config) { { name: 'local', index: '1' } }
-      let(:user_guid) { 'gooid' }
-      let(:user_email) { 'utako.loves@cats.com' }
 
       it 'enqueues and returns an upload job' do
         returned_job = nil
         expect {
-          returned_job = package_upload.upload_async(message: message, package: package, config: config, user_guid: user_guid, user_email: user_email)
+          returned_job = package_upload.upload_async(message: message, package: package, config: config)
         }.to change { Delayed::Job.count }.by(1)
 
         job = Delayed::Job.last
@@ -26,18 +25,16 @@ module VCAP::CloudController
       end
 
       it 'changes the state to pending' do
-        package_upload.upload_async(message: message, package: package, config: config, user_guid: user_guid, user_email: user_email)
+        package_upload.upload_async(message: message, package: package, config: config)
         expect(PackageModel.find(guid: package.guid).state).to eq(PackageModel::PENDING_STATE)
       end
 
       it 'creates an audit event' do
-        expect(Repositories::PackageEventRepository).to receive(:record_app_package_upload).with(
-          instance_of(PackageModel),
-          user_guid,
-          user_email
-        )
+        package_upload.upload_async(message: message, package: package, config: config)
 
-        package_upload.upload_async(message: message, package: package, config: config, user_guid: user_guid, user_email: user_email)
+        event = Event.last
+        expect(event.type).to eq('audit.app.package.upload')
+        expect(event.metadata['package_guid']).to eq(package.guid)
       end
 
       context 'when the package is invalid' do
@@ -47,7 +44,7 @@ module VCAP::CloudController
 
         it 'raises InvalidPackage' do
           expect {
-            package_upload.upload_async(message: message, package: package, config: config, user_guid: user_guid, user_email: user_email)
+            package_upload.upload_async(message: message, package: package, config: config)
           }.to raise_error(PackageUpload::InvalidPackage)
         end
       end
@@ -72,7 +69,7 @@ module VCAP::CloudController
       end
 
       it 'does not create an audit event' do
-        expect(Repositories::PackageEventRepository).not_to receive(:record_app_package_upload)
+        expect_any_instance_of(Repositories::PackageEventRepository).not_to receive(:record_app_package_upload)
         package_upload.upload_async_without_event(message: message, package: package, config: config)
       end
     end

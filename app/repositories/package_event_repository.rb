@@ -1,7 +1,11 @@
 module VCAP::CloudController
   module Repositories
     class PackageEventRepository
-      def self.record_app_package_create(package, user_guid, user_name, request_attrs)
+      def initialize(user_info)
+        @user_info = user_info
+      end
+
+      def record_app_package_create(package, request_attrs)
         app_guid = request_attrs.delete('app_guid')
         Loggregator.emit(app_guid, "Adding app package for app with guid #{app_guid}")
 
@@ -11,10 +15,10 @@ module VCAP::CloudController
         }
         type = 'audit.app.package.create'
 
-        self.create_event(package, type, user_guid, user_name, metadata)
+        create_event(package, type, metadata)
       end
 
-      def self.record_app_package_copy(package, user_guid, user_name, source_package_guid)
+      def record_app_package_copy(package, source_package_guid)
         app = package.app
         Loggregator.emit(app.guid, "Adding app package for app with guid #{app.guid} copied from package with guid #{source_package_guid}")
         metadata = {
@@ -25,34 +29,34 @@ module VCAP::CloudController
         }
         type = 'audit.app.package.create'
 
-        create_event(package, type, user_guid, user_name, metadata)
+        create_event(package, type, metadata)
       end
 
-      def self.record_app_package_upload(package, user_guid, user_name)
+      def record_app_package_upload(package)
         Loggregator.emit(package.app.guid, "Uploading app package for app with guid #{package.app.guid}")
         metadata = { package_guid: package.guid }
         type     = 'audit.app.package.upload'
 
-        create_event(package, type, user_guid, user_name, metadata)
+        create_event(package, type, metadata)
       end
 
-      def self.record_app_package_delete(package, user_guid, user_name)
+      def record_app_package_delete(package)
         Loggregator.emit(package.app.guid, "Deleting app package for app with guid #{package.app.guid}")
         metadata = { package_guid: package.guid }
         type     = 'audit.app.package.delete'
 
-        create_event(package, type, user_guid, user_name, metadata)
+        create_event(package, type, metadata)
       end
 
-      def self.record_app_package_download(package, user_guid, user_name)
+      def record_app_package_download(package)
         Loggregator.emit(package.app.guid, "Downloading app package for app with guid #{package.app.guid}")
         metadata = { package_guid: package.guid }
         type     = 'audit.app.package.download'
 
-        create_event(package, type, user_guid, user_name, metadata)
+        create_event(package, type, metadata)
       end
 
-      def self.create_event(package, type, user_guid, user_name, metadata)
+      def create_event(package, type, metadata)
         app = package.app
         Event.create(
           space:      package.space,
@@ -61,9 +65,9 @@ module VCAP::CloudController
           actee:      app.guid,
           actee_type: 'app',
           actee_name: app.name,
-          actor:      user_guid,
+          actor:      @user_info.guid,
           actor_type: 'user',
-          actor_name: user_name,
+          actor_name: @user_info.email,
           metadata:   metadata
         )
       end

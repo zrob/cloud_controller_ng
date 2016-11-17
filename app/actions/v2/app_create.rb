@@ -56,7 +56,7 @@ module VCAP::CloudController
 
         if docker_type_requested
           create_message = PackageCreateMessage.new({ type: 'docker', app_guid: app.guid, data: { image: request_attrs['docker_image'] } })
-          PackageCreate.create_without_event(create_message)
+          PackageCreate.new(nil).create_without_event(create_message)
         elsif buildpack_type_requested || !docker_type_requested
           app.buildpack_lifecycle_data = BuildpackLifecycleDataModel.new(
             buildpack: request_attrs['buildpack'],

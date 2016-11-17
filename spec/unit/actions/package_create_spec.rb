@@ -3,6 +3,9 @@ require 'actions/package_create'
 
 module VCAP::CloudController
   RSpec.describe PackageCreate do
+    subject(:package_create) { PackageCreate.new(user_info) }
+
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user_guid', email: 'user_email') }
     let(:app) { AppModel.make }
     let(:type) { 'docker' }
     let(:message) { PackageCreateMessage.new({ type: type, app_guid: app.guid }) }
@@ -12,7 +15,7 @@ module VCAP::CloudController
       let(:user_email) { 'user@example.com' }
 
       it 'creates the package with the correct values' do
-        result = described_class.create(message: message, user_guid: user_guid, user_email: user_email)
+        result = package_create.create(message: message)
 
         expect(app.packages.first).to eq(result)
         created_package = PackageModel.find(guid: result.guid)
@@ -21,17 +24,13 @@ module VCAP::CloudController
       end
 
       it 'creates an audit event' do
-        expect(Repositories::PackageEventRepository).to receive(:record_app_package_create).with(
-          instance_of(PackageModel),
-          user_guid,
-          user_email,
-          {
-            'app_guid' => app.guid,
-            'type' => type,
-          }
-        )
+        package_create.create(message: message)
 
-        described_class.create(message: message, user_guid: user_guid, user_email: user_email)
+        event = Event.last
+        expect(event.type).to eq('audit.app.package.create')
+        expect(event.metadata['request']).to eq({
+          'type' => type,
+        })
       end
 
       describe 'docker packages' do
@@ -47,7 +46,7 @@ module VCAP::CloudController
         end
 
         it 'persists docker info' do
-          result = described_class.create(message: message, user_guid: user_guid, user_email: user_email)
+          result = package_create.create(message: message)
 
           expect(app.packages.first).to eq(result)
           created_package = PackageModel.find(guid: result.guid)
@@ -63,7 +62,7 @@ module VCAP::CloudController
           let(:url) { nil }
 
           it 'sets the state to CREATED_STATE' do
-            result = described_class.create(message: message, user_guid: user_guid, user_email: user_email)
+            result = package_create.create(message: message)
             expect(result.type).to eq('bits')
             expect(result.state).to eq(PackageModel::CREATED_STATE)
           end
@@ -71,7 +70,7 @@ module VCAP::CloudController
 
         context 'when the type is docker' do
           it 'sets the state to READY_STATE' do
-            result = described_class.create(message: message, user_guid: user_guid, user_email: user_email)
+            result = package_create.create(message: message)
             expect(result.type).to eq('docker')
             expect(result.state).to eq(PackageModel::READY_STATE)
           end
@@ -85,7 +84,7 @@ module VCAP::CloudController
 
         it 'raises an InvalidPackage error' do
           expect {
-            described_class.create(message: message, user_guid: user_guid, user_email: user_email)
+            package_create.create(message: message)
           }.to raise_error(PackageCreate::InvalidPackage, 'the message')
         end
       end
@@ -93,7 +92,7 @@ module VCAP::CloudController
 
     describe '#create_without_event' do
       it 'creates the package with the correct values' do
-        result = described_class.create_without_event(message)
+        result = package_create.create_without_event(message)
 
         expect(app.packages.first).to eq(result)
         created_package = PackageModel.find(guid: result.guid)
@@ -102,8 +101,8 @@ module VCAP::CloudController
       end
 
       it 'does not create an audit event' do
-        expect(Repositories::PackageEventRepository).not_to receive(:record_app_package_create)
-        described_class.create_without_event(message)
+        expect_any_instance_of(Repositories::PackageEventRepository).not_to receive(:record_app_package_create)
+        package_create.create_without_event(message)
       end
     end
   end

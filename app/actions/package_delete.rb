@@ -1,8 +1,7 @@
 module VCAP::CloudController
   class PackageDelete
-    def initialize(user_guid, user_email)
-      @user_guid = user_guid
-      @user_email = user_email
+    def initialize(user_info)
+      @user_info = user_info
     end
 
     def delete(packages)
@@ -13,10 +12,7 @@ module VCAP::CloudController
         Jobs::Enqueuer.new(blobstore_delete, queue: 'cc-generic').enqueue
         package.destroy
 
-        Repositories::PackageEventRepository.record_app_package_delete(
-          package,
-          @user_guid,
-          @user_email)
+        Repositories::PackageEventRepository.new(@user_info).record_app_package_delete(package)
       end
     end
   end
