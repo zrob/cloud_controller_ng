@@ -94,7 +94,7 @@ module VCAP::CloudController
         org_not_authorized! unless plan_visible_to_org?(organization, service_plan)
       end
 
-      service_instance = ServiceInstanceCreate.new(@services_event_repository, logger).
+      service_instance = ServiceInstanceCreate.new(audit_user_info, logger).
                          create(request_attrs, accepts_incomplete)
 
       route_service_warning(service_instance) unless route_services_enabled?
@@ -120,7 +120,7 @@ module VCAP::CloudController
       validate_space_update(related_objects[:space])
       validate_plan_update(related_objects[:plan], related_objects[:service])
 
-      update = ServiceInstanceUpdate.new(accepts_incomplete: accepts_incomplete, services_event_repository: @services_event_repository)
+      update = ServiceInstanceUpdate.new(accepts_incomplete: accepts_incomplete, user_info: audit_user_info)
       update.update_service_instance(service_instance, request_attrs)
 
       status_code = status_from_operation_state(service_instance)

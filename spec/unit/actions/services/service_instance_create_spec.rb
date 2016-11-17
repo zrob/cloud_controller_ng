@@ -3,9 +3,9 @@ require 'actions/services/service_instance_create'
 
 module VCAP::CloudController
   RSpec.describe ServiceInstanceCreate do
-    let(:event_repository) { instance_double(Repositories::ServiceEventRepository, record_service_instance_event: nil, user: User.make, current_user_email: 'fake@email.com') }
+    subject(:create_action) { ServiceInstanceCreate.new(user_info, logger) }
     let(:logger) { double(:logger) }
-    subject(:create_action) { ServiceInstanceCreate.new(event_repository, logger) }
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user_guid', email: 'user_email') }
 
     describe '#create' do
       let(:space) { Space.make }
@@ -49,7 +49,11 @@ module VCAP::CloudController
 
       it 'creates an audit event' do
         create_action.create(request_attrs, false)
-        expect(event_repository).to have_received(:record_service_instance_event).with(:create, an_instance_of(ManagedServiceInstance), request_attrs)
+
+        event = Event.last
+        expect(event.type).to eq('audit.service_instance.create')
+        expect(event.metadata['request']['space_guid']).to eq(space.guid)
+        expect(event.metadata['request']['service_plan_guid']).to eq(service_plan.guid)
       end
 
       context 'when there are arbitrary params' do
@@ -83,8 +87,8 @@ module VCAP::CloudController
         end
 
         it 'does not log an audit event' do
+          expect_any_instance_of(VCAP::CloudController::Repositories::ServiceEventRepository).not_to receive(:record_service_instance_event)
           create_action.create(request_attrs, true)
-          expect(event_repository).not_to have_received(:record_service_instance_event)
         end
       end
 

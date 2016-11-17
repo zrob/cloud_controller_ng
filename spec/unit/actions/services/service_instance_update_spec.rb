@@ -3,15 +3,14 @@ require 'actions/services/service_instance_update'
 
 module VCAP::CloudController
   RSpec.describe ServiceInstanceUpdate do
-    let(:services_event_repo) do
-      instance_double(Repositories::ServiceEventRepository, record_service_instance_event: nil, user: User.make, current_user_email: 'fake@email.com')
-    end
-    let(:service_instance_update) do
+    subject(:service_instance_update) do
       ServiceInstanceUpdate.new(
         accepts_incomplete: false,
-        services_event_repository: services_event_repo
+        user_info: user_info,
       )
     end
+
+    let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user_guid', email: 'user_email') }
     let(:service_broker) { ServiceBroker.make }
     let(:service) { Service.make(plan_updateable: true, service_broker: service_broker) }
     let(:old_service_plan) { ServicePlan.make(:v2, service: service) }

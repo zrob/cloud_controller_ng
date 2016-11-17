@@ -5,7 +5,18 @@ module VCAP::CloudController
   module Jobs
     module Services
       RSpec.describe ServiceInstanceStateFetch do
+        subject(:job) do
+          VCAP::CloudController::Jobs::Services::ServiceInstanceStateFetch.new(
+            name,
+            client_attrs,
+            service_instance.guid,
+            user_info,
+            request_attrs,
+          )
+        end
         let(:proposed_service_plan) { ServicePlan.make }
+        let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: user.guid, email: 'user_email') }
+        let(:user) { User.make }
         let(:service_instance) do
           operation = ServiceInstanceOperation.make(proposed_changes: {
             name: 'new-fake-name',
@@ -29,9 +40,6 @@ module VCAP::CloudController
 
         let(:name) { 'fake-name' }
 
-        let(:user) { User.make }
-        let(:user_email) { 'fake@mail.foo' }
-
         let(:status) { 200 }
         let(:state) { 'succeeded' }
         let(:description) { 'description' }
@@ -47,17 +55,6 @@ module VCAP::CloudController
           {
             dummy_data: 'dummy_data'
           }
-        end
-
-        subject(:job) do
-          VCAP::CloudController::Jobs::Services::ServiceInstanceStateFetch.new(
-            name,
-            client_attrs,
-            service_instance.guid,
-            user.guid,
-            user_email,
-            request_attrs,
-          )
         end
 
         def run_job(job)

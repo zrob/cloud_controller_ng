@@ -80,8 +80,7 @@ module VCAP::CloudController
         'service-instance-state-fetch',
         service_instance.client.attrs,
         service_instance.guid,
-        @user_info.guid,
-        @user_info.email,
+        @user_info,
         {},
       )
     end

@@ -1,11 +1,12 @@
 module VCAP::CloudController
   module Repositories
     class ServiceEventRepository
-      attr_reader :user, :current_user_email
+      def initialize(user_info)
+        @user_info = user_info
+      end
 
-      def initialize(user:, user_email:)
-        @user               = user
-        @current_user_email = user_email
+      def self.from_security_context(security_context)
+        new(VCAP::CloudController::Audit::UserInfo.from_security_context(security_context))
       end
 
       def logger
@@ -231,8 +232,8 @@ module VCAP::CloudController
       def user_actor
         {
           actor_type: 'user',
-          actor:      user.guid,
-          actor_name: current_user_email
+          actor:      @user_info.guid,
+          actor_name: @user_info.email,
         }
       end
 

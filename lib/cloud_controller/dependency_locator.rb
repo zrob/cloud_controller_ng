@@ -157,10 +157,7 @@ module CloudController
     end
 
     def services_event_repository
-      Repositories::ServiceEventRepository.new(
-        user: SecurityContext.current_user,
-        user_email: SecurityContext.current_user_email
-      )
+      Repositories::ServiceEventRepository.from_security_context(SecurityContext)
     end
 
     def app_event_repository

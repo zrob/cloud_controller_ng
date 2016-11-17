@@ -5,9 +5,9 @@ module VCAP::CloudController
     KEYS_TO_UPDATE_CC_ONLY = %w(tags name space_guid).freeze
     KEYS_TO_UPDATE_CC = KEYS_TO_UPDATE_CC_ONLY + ['service_plan_guid']
 
-    def initialize(accepts_incomplete: false, services_event_repository: nil)
+    def initialize(accepts_incomplete: false, user_info:)
       @accepts_incomplete = accepts_incomplete
-      @services_event_repository = services_event_repository
+      @user_info = user_info
     end
 
     def update_service_instance(service_instance, request_attrs)
@@ -27,7 +27,8 @@ module VCAP::CloudController
       end
 
       unless service_instance.operation_in_progress?
-        @services_event_repository.record_service_instance_event(:update, service_instance, request_attrs)
+        VCAP::CloudController::Repositories::ServiceEventRepository.new(@user_info).record_service_instance_event(
+          :update, service_instance, request_attrs)
       end
     ensure
       lock.unlock_and_fail! if lock.needs_unlock?
@@ -114,8 +115,7 @@ module VCAP::CloudController
         'service-instance-state-fetch',
         service_instance.client.attrs,
         service_instance.guid,
-        @services_event_repository.user.guid,
-        @services_event_repository.current_user_email,
+        @user_info,
         request_attrs,
       )
     end

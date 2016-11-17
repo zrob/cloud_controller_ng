@@ -3,22 +3,11 @@ require 'spec_helper'
 module VCAP::CloudController
   module Repositories
     RSpec.describe ServiceEventRepository do
-      let(:user) { VCAP::CloudController::User.make }
-      let(:email) { 'email@example.com' }
+      subject(:repository) { ServiceEventRepository.new(user_info) }
+      let(:user_info) { VCAP::CloudController::Audit::UserInfo.new(guid: 'user_guid', email: 'user_email') }
       let(:logger) { double(:logger, error: nil) }
-      let(:repository) { ServiceEventRepository.new(user: user, user_email: email) }
       before do
         allow(repository).to receive(:logger).and_return(logger)
-      end
-
-      describe 'attributes' do
-        it 'has user' do
-          expect(repository.user).to eq(user)
-        end
-
-        it 'has user_email' do
-          expect(repository.current_user_email).to eq(email)
-        end
       end
 
       describe 'record_service_plan_visibility_event' do
@@ -34,8 +23,8 @@ module VCAP::CloudController
           event = Event.find(type: 'audit.service_plan_visibility.create')
           expect(event.actor_type).to eq('user')
           expect(event.timestamp).to be
-          expect(event.actor).to eq(user.guid)
-          expect(event.actor_name).to eq(email)
+          expect(event.actor).to eq('user_guid')
+          expect(event.actor_name).to eq('user_email')
           expect(event.actee).to eq(service_plan_visibility.guid)
           expect(event.actee_type).to eq('service_plan_visibility')
           expect(event.actee_name).to eq('')
@@ -62,8 +51,8 @@ module VCAP::CloudController
           event = Event.find(type: 'audit.service_broker.create')
           expect(event.actor_type).to eq('user')
           expect(event.timestamp).to be
-          expect(event.actor).to eq(user.guid)
-          expect(event.actor_name).to eq(email)
+          expect(event.actor).to eq('user_guid')
+          expect(event.actor_name).to eq('user_email')
           expect(event.actee).to eq(service_broker.guid)
           expect(event.actee_type).to eq('service_broker')
           expect(event.actee_name).to eq(service_broker.name)
@@ -400,8 +389,8 @@ module VCAP::CloudController
           event = VCAP::CloudController::Event.first(type: 'audit.service_instance.create')
           expect(event.type).to eq('audit.service_instance.create')
           expect(event.actor_type).to eq('user')
-          expect(event.actor).to eq(user.guid)
-          expect(event.actor_name).to eq(email)
+          expect(event.actor).to eq('user_guid')
+          expect(event.actor_name).to eq('user_email')
           expect(event.timestamp).to be
           expect(event.actee).to eq(instance.guid)
           expect(event.actee_type).to eq('service_instance')
@@ -453,9 +442,9 @@ module VCAP::CloudController
           repository.record_user_provided_service_instance_event(:create, instance, params)
           event = Event.first(type: 'audit.user_provided_service_instance.create')
 
-          expect(event.actor).to eq user.guid
+          expect(event.actor).to eq 'user_guid'
           expect(event.actor_type).to eq 'user'
-          expect(event.actor_name).to eq email
+          expect(event.actor_name).to eq 'user_email'
           expect(event.actee).to eq instance.guid
           expect(event.actee_type).to eq 'user_provided_service_instance'
           expect(event.actee_name).to eq instance.name
@@ -500,9 +489,9 @@ module VCAP::CloudController
             }
           }
 
-          expect(event.actor).to eq user.guid
+          expect(event.actor).to eq 'user_guid'
           expect(event.actor_type).to eq 'user'
-          expect(event.actor_name).to eq email
+          expect(event.actor_name).to eq 'user_email'
           expect(event.actee).to eq service_binding.guid
           expect(event.actee_type).to eq 'service_binding'
           expect(event.actee_name).to eq ''
@@ -525,9 +514,9 @@ module VCAP::CloudController
 
         def check_event_data(event_type, metadata)
           event = Event.first(type: event_type)
-          expect(event.actor).to eq user.guid
+          expect(event.actor).to eq 'user_guid'
           expect(event.actor_type).to eq 'user'
-          expect(event.actor_name).to eq email
+          expect(event.actor_name).to eq 'user_email'
           expect(event.actee).to eq service_key.guid
           expect(event.actee_type).to eq 'service_key'
           expect(event.actee_name).to eq service_key.name
@@ -565,9 +554,9 @@ module VCAP::CloudController
             }
           }
 
-          expect(event.actor).to eq user.guid
+          expect(event.actor).to eq 'user_guid'
           expect(event.actor_type).to eq 'user'
-          expect(event.actor_name).to eq email
+          expect(event.actor_name).to eq 'user_email'
           expect(event.actee).to eq service.guid
           expect(event.actee_type).to eq 'service'
           expect(event.actee_name).to eq service.label

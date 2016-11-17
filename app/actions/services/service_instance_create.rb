@@ -2,8 +2,8 @@ require 'actions/services/synchronous_orphan_mitigate'
 
 module VCAP::CloudController
   class ServiceInstanceCreate
-    def initialize(services_event_repository, logger)
-      @services_event_repository = services_event_repository
+    def initialize(user_info, logger)
+      @user_info = user_info
       @logger = logger
     end
 
@@ -30,7 +30,8 @@ module VCAP::CloudController
       end
 
       if !accepts_incomplete || service_instance.last_operation.state != 'in progress'
-        @services_event_repository.record_service_instance_event(:create, service_instance, request_attrs)
+        VCAP::CloudController::Repositories::ServiceEventRepository.new(@user_info).record_service_instance_event(
+          :create, service_instance, request_attrs)
       end
 
       service_instance
@@ -41,8 +42,7 @@ module VCAP::CloudController
         'service-instance-state-fetch',
         service_instance.client.attrs,
         service_instance.guid,
-        @services_event_repository.user.guid,
-        @services_event_repository.current_user_email,
+        @user_info,
         request_attrs,
       )
       enqueuer = Jobs::Enqueuer.new(job, queue: 'cc-generic')
