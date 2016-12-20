@@ -74,15 +74,18 @@ module VCAP::CloudController
     end
 
     def dea_apps_hm9k(batch_size, last_id)
-      query = App.select_all(App.table_name).
+      apps = App.select_all(App.table_name).
               runnable.
               dea.
               where("#{App.table_name}.id > ?", last_id).
               order("#{App.table_name}__id".to_sym).
+              #exclude failed latest_droplets?? why? there is a case where app is still running on current_droplet
+              #exclude when (current_droplet == latest_droplet & latest_package.failed)  <--- does this mean
+              # the app potentially has a running droplet but new uploaded package bits failed. why do we want to exclude these?
               limit(batch_size).
               eager(:latest_droplet, :latest_package, current_droplet: :package)
 
-      apps = query.all.reject { |a| a.package_state == 'FAILED' }
+      # apps = query.all.reject { |a| a.package_state == 'FAILED' }
 
       app_hashes = apps.map do |app|
         {

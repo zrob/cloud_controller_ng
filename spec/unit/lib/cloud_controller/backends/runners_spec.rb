@@ -110,6 +110,16 @@ module VCAP::CloudController
         expect(batch).not_to include(unstaged_app)
       end
 
+      it 'does not return apps that failed to stage' do
+        staging_failed_app = AppFactory.make(diego: true, state: 'STARTED')
+        DropletModel.make(package: staging_failed_app.latest_package, app: staging_failed_app.app, state: DropletModel::FAILED_STATE)
+
+        batch, _ = runners.diego_apps(100, 0)
+
+        guids = batch.map { |entry| entry['id'] }
+        expect(guids).not_to include(staging_failed_app.guid)
+      end
+
       it "does not return apps which aren't expected to be started" do
         stopped_app = AppFactory.make(diego: true, state: 'STOPPED')
 

@@ -71,6 +71,7 @@ module VCAP::CloudController
           }
 
           expect(last_response.status).to eq(200)
+          p last_response.body
           expect(decoded_response['apps'].size).to eq(3)
         end
 

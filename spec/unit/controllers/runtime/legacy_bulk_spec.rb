@@ -81,6 +81,9 @@ module VCAP::CloudController
             'bulk_token' => '{"id":0}',
           }
           expect(last_response.status).to eq(200)
+
+          p last_response.body
+
           decoded_response['results'].each { |key, value|
             expect(value).to be_kind_of Hash
             expect(value['id']).not_to be_nil
