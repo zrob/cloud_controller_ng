@@ -77,6 +77,38 @@ module VCAP::CloudController
         end
       end
 
+      def fetch_scheduling_infos
+        logger.info('fetch.scheduling.infos.starting')
+
+        result = handle_diego_errors do
+          response = @client.desired_lrp_scheduling_infos(APP_LRP_DOMAIN)
+          logger.info('fetch.scheduling.infos.response', error: response.error)
+
+          if response.error
+            return nil if response.error.type == ::Diego::Bbs::Models::Error::Type::ResourceNotFound
+          end
+
+          response
+        end
+
+        result.desired_lrp_scheduling_infos
+      end
+
+
+      def bump_freshness!
+        logger.info('bump.freshness.request', domain: APP_LRP_DOMAIN)
+        handle_diego_errors do
+          response = @client.upsert_domain(domain: APP_LRP_DOMAIN, ttl: 120) # seconds
+          logger.info('bump.freshness.response', domain: APP_LRP_DOMAIN, error: response.error)
+
+          if response.error
+            return nil if response.error.type == ::Diego::Bbs::Models::Error::Type::ResourceNotFound
+          end
+
+          response
+        end
+      end
+
       private
 
       def handle_diego_errors

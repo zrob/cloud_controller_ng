@@ -19,6 +19,17 @@ module Diego
       protobuf_decode!(response.body, Bbs::Models::PingResponse)
     end
 
+    def upsert_domain(domain:, ttl:)
+      request = protobuf_encode!({ domain: domain, ttl: ttl }, Bbs::Models::UpsertDomainRequest)
+
+      response = with_request_error_handling do
+        client.post(Routes::UPSERT_DOMAIN, request, PROTOBUF_HEADER)
+      end
+
+      validate_status!(response: response, statuses: [200])
+      protobuf_decode!(response.body, Bbs::Models::UpsertDomainResponse)
+    end
+
     def desire_task(task_definition:, domain:, task_guid:)
       request = protobuf_encode!({ task_definition: task_definition, domain: domain, task_guid: task_guid }, Bbs::Models::DesireTaskRequest)
 
@@ -83,6 +94,17 @@ module Diego
 
       validate_status!(response: response, statuses: [200])
       protobuf_decode!(response.body, Bbs::Models::DesiredLRPResponse)
+    end
+
+    def desired_lrp_scheduling_infos(domain)
+      request = protobuf_encode!({ domain: domain }, Bbs::Models::DesiredLRPsRequest)
+
+      response = with_request_error_handling do
+        client.post(Routes::DESIRED_LRP_SCHEDULING_INFOS, request, PROTOBUF_HEADER)
+      end
+
+      validate_status!(response: response, statuses: [200])
+      protobuf_decode!(response.body, Bbs::Models::DesiredLRPSchedulingInfosResponse)
     end
 
     def update_desired_lrp(process_guid, lrp_update)

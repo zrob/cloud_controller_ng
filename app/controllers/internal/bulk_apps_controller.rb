@@ -3,6 +3,7 @@ require 'controllers/base/base_controller'
 require 'cloud_controller/internal_api'
 require 'cloud_controller/diego/process_guid'
 require 'cloud_controller/diego/tps_client'
+require 'cloud_controller/diego/sync'
 
 module VCAP::CloudController
   class BulkAppsController < RestController::BaseController
@@ -15,7 +16,17 @@ module VCAP::CloudController
       unless auth.provided? && auth.basic? && auth.credentials == InternalApi.credentials
         raise CloudController::Errors::NotAuthenticated
       end
+
+      dependency_locator = CloudController::DependencyLocator.instance
+      dependency_locator.config
+      @sync = Diego::Sync.new(config: dependency_locator.config)
     end
+
+    def sync_apps
+      @sync.sync_processes
+    end
+
+    get '/internal/bulk/sync_processes', :sync_apps
 
     def bulk_apps
       batch_size = Integer(params.fetch('batch_size'))
