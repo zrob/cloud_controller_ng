@@ -1,38 +1,42 @@
+require 'cloud_controller/diego/protocol/open_process_ports'
+
 module VCAP::CloudController
   module Diego
     module Buildpack
       class DesiredLrpBuilder
         include ::Diego::ActionBuilder
 
-        def initialize(config, app_request)
+        def initialize(config, process)
           @config = config
-          @app_request = app_request
+          @process = process
         end
 
         def cached_dependencies
-          lifecycle_bundle_key = "buildpack/#{@app_request['stack']}".to_sym
+          stack = @process.stack.name
+          lifecycle_bundle_key = "buildpack/#{stack}".to_sym
           [
             ::Diego::Bbs::Models::CachedDependency.new(
               from: LifecycleBundleUriGenerator.uri(@config[:diego][:lifecycle_bundles][lifecycle_bundle_key]),
               to: '/tmp/lifecycle',
-              cache_key: "buildpack-#{@app_request['stack']}-lifecycle"
+              cache_key: "buildpack-#{stack}-lifecycle"
             )
           ]
         end
 
         def root_fs
-          "preloaded:#{@app_request['stack']}"
+          "preloaded:#{@process['stack']}"
         end
 
         def setup
+          blobstore_url_generator = ::CloudController::DependencyLocator.instance.blobstore_url_generator
           serial([
             ::Diego::Bbs::Models::DownloadAction.new(
-              from: @app_request['droplet_uri'],
+              from: blobstore_url_generator.unauthorized_perma_droplet_download_url(@process),
               to: '.',
-              cache_key: "droplets-#{@app_request['process_guid']}",
+              cache_key: "droplets-#{ProcessGuid.from_process(@process)}",
               user: 'vcap',
               checksum_algorithm: 'sha1',
-              checksum_value: @app_request['droplet_hash'],
+              checksum_value: @process.current_droplet.droplet_hash,
             )
           ])
         end
@@ -42,7 +46,7 @@ module VCAP::CloudController
         end
 
         def ports
-          @app_request['ports'] || [DEFAULT_APP_PORT]
+          Diego::Protocol::OpenProcessPorts.new(@process).to_a || [DEFAULT_APP_PORT]
         end
 
         def privileged?

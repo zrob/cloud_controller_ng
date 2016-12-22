@@ -47,8 +47,8 @@ module VCAP
             TaskActionBuilder.new(config, task, task_lifecycle_data(task))
           end
 
-          def desired_lrp_builder(config, app_request)
-            DesiredLrpBuilder.new(config, app_request)
+          def desired_lrp_builder(config, process)
+            DesiredLrpBuilder.new(config, process)
           end
 
           def desired_app_message(process)

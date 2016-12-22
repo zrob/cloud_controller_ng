@@ -18,6 +18,15 @@ module VCAP::CloudController
             },
           }
         end
+
+        def properties
+          {
+            policy_group_id: process.app.guid,
+            app_id: process.app.guid,
+            space_id: process.app.space.guid,
+            org_id: process.app.organization.guid,
+          }
+        end
       end
     end
   end

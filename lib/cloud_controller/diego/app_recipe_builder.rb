@@ -1,24 +1,27 @@
 require 'cloud_controller/diego/buildpack/desired_lrp_builder'
 require 'cloud_controller/diego/docker/desired_lrp_builder'
 require 'cloud_controller/diego/ssh_key'
+require 'cloud_controller/diego/protocol/app_volume_mounts'
+require 'cloud_controller/diego/protocol/routing_info'
+require 'cloud_controller/diego/protocol/container_network_info'
 
 module VCAP::CloudController
   module Diego
     class AppRecipeBuilder
       include ::Diego::ActionBuilder
 
-      def initialize(config:, process:, app_request:, ssh_key: SSHKey.new)
-        @config      = config
-        @process     = process
-        @app_request = app_request
-        @ssh_key     = ssh_key
+      def initialize(config:, process:, default_health_check_timeout:, ssh_key: SSHKey.new)
+        @config                       = config
+        @process                      = process
+        @ssh_key                      = ssh_key
+        @default_health_check_timeout = default_health_check_timeout
       end
 
       def build_app_lrp
-        desired_lrp_builder = LifecycleProtocol.protocol_for_type(process.app.lifecycle_type).desired_lrp_builder(config, app_request)
+        desired_lrp_builder = LifecycleProtocol.protocol_for_type(process.app.lifecycle_type).desired_lrp_builder(config, process)
 
         ports  = desired_lrp_builder.ports
-        routes = generate_routes(app_request['routing_info'])
+        routes = generate_routes(Protocol::RoutingInfo.new(process).routing_info)
 
         if allow_ssh?
           ports << DEFAULT_SSH_PORT
@@ -34,37 +37,37 @@ module VCAP::CloudController
         end
 
         ::Diego::Bbs::Models::DesiredLRP.new(
-          process_guid:                     app_request['process_guid'],
-          instances:                        app_request['num_instances'],
+          process_guid:                     ProcessGuid.from_process(process),
+          instances:                        process.desired_instances,
           environment_variables:            desired_lrp_builder.global_environment_variables,
-          start_timeout_ms:                 app_request['health_check_timeout_in_seconds'] * 1000,
-          disk_mb:                          app_request['disk_mb'],
-          memory_mb:                        app_request['memory_mb'],
+          start_timeout_ms:                 (process.health_check_timeout || default_health_check_timeout) * 1000,
+          disk_mb:                          process.disk_quota,
+          memory_mb:                        process.memory,
           privileged:                       desired_lrp_builder.privileged?,
-          ports:                            desired_lrp_builder.ports,
+          ports:                            ports,
           log_source:                       LRP_LOG_SOURCE,
-          log_guid:                         app_request['log_guid'],
-          metrics_guid:                     app_request['log_guid'],
-          annotation:                       app_request['etag'],
+          log_guid:                         process.app.guid,
+          metrics_guid:                     process.app.guid,
+          annotation:                       process.updated_at.to_f.to_s,
           egress_rules:                     generate_egress_rules,
           cached_dependencies:              desired_lrp_builder.cached_dependencies,
           legacy_download_user:             'root',
           trusted_system_certificates_path: RUNNING_TRUSTED_SYSTEM_CERT_PATH,
           network:                          generate_network,
-          cpu_weight:                       TaskCpuWeightCalculator.new(memory_in_mb: app_request['memory_mb']).calculate,
+          cpu_weight:                       TaskCpuWeightCalculator.new(memory_in_mb: process.memory).calculate,
           action:                           generate_run_action(desired_lrp_builder),
           monitor:                          generate_monitor_action(desired_lrp_builder),
           root_fs:                          desired_lrp_builder.root_fs,
           setup:                            desired_lrp_builder.setup,
           domain:                           APP_LRP_DOMAIN,
           volume_mounts:                    generate_volume_mounts,
-          PlacementTags:                    [app_request['isolation_segment']],
+          PlacementTags:                    [VCAP::CloudController::IsolationSegmentSelector.for_space(process.space)],
           routes:                           ::Diego::Bbs::Models::Proto_routes.new(routes: routes)
         )
       end
 
       def build_app_lrp_update(existing_lrp)
-        routes = generate_routes(app_request['routing_info'])
+        routes = generate_routes(Protocol::RoutingInfo.new(process).routing_info)
 
         existing_routes = ::Diego::Bbs::Models::Proto_routes.decode(existing_lrp.routes)
         ssh_route       = existing_routes.routes.find { |r| r.key == SSH_ROUTES_KEY }
@@ -79,7 +82,7 @@ module VCAP::CloudController
 
       private
 
-      attr_reader :config, :process, :app_request, :ssh_key
+      attr_reader :config, :process, :default_health_check_timeout, :ssh_key
 
       def generate_routes(info)
         http_routes = (info['http_routes'] || []).map do |i|
@@ -103,11 +106,11 @@ module VCAP::CloudController
       end
 
       def allow_ssh?
-        app_request['allow_ssh']
+        process.enable_ssh
       end
 
       def generate_volume_mounts
-        app_volume_mounts   = app_request['volume_mounts'].as_json
+        app_volume_mounts   = Protocol::AppVolumeMounts.new(process.app).as_json
         proto_volume_mounts = []
 
         app_volume_mounts.each do |volume_mount|
@@ -129,17 +132,18 @@ module VCAP::CloudController
       end
 
       def generate_app_action(user, environment_variables)
+        start_command = process.command.nil? ? process.detected_start_command : process.command
         action(::Diego::Bbs::Models::RunAction.new(
                  user:            user,
                  path:            '/tmp/lifecycle/launcher',
                  args:            [
                    'app',
-                   app_request['start_command'] || '',
-                   app_request['execution_metadata'],
+                   start_command || '',
+                   process.execution_metadata,
                  ],
                  env:             environment_variables,
-                 log_source:      app_request['log_source'] || APP_LOG_SOURCE,
-                 resource_limits: ::Diego::Bbs::Models::ResourceLimits.new(nofile: file_descriptor_limit(app_request['file_descriptors'])),
+                 log_source:       "APP/PROC/#{process.type.upcase}",
+                 resource_limits: ::Diego::Bbs::Models::ResourceLimits.new(nofile: file_descriptor_limit(process.file_descriptors)),
         ))
       end
 
@@ -155,7 +159,7 @@ module VCAP::CloudController
                    '-logLevel=fatal',
                  ],
                  env:             environment_variables,
-                 resource_limits: ::Diego::Bbs::Models::ResourceLimits.new(nofile: file_descriptor_limit(app_request['file_descriptors'])),
+                 resource_limits: ::Diego::Bbs::Models::ResourceLimits.new(nofile: file_descriptor_limit(process.file_descriptors)),
         ))
       end
 
@@ -163,8 +167,15 @@ module VCAP::CloudController
         desired_ports         = lrp_builder.ports
         environment_variables = []
 
-        app_request['environment'].each do |i|
-          environment_variables << ::Diego::Bbs::Models::EnvironmentVariable.new(name: i['name'], value: i['value'])
+        Environment.new(process, EnvironmentVariableGroup.running.environment_json).env.each do |k, v|
+          case v
+          when Array, Hash
+            v = MultiJson.dump(v)
+          else
+            v = v.to_s
+          end
+
+          environment_variables << ::Diego::Bbs::Models::EnvironmentVariable.new(name: k.to_s, value: v)
         end
         environment_variables << ::Diego::Bbs::Models::EnvironmentVariable.new(name: 'PORT', value: desired_ports.first.to_s)
         environment_variables
@@ -180,7 +191,7 @@ module VCAP::CloudController
       end
 
       def generate_monitor_action(lrp_builder)
-        return if app_request['health_check_type'] == 'none'
+        return if process.health_check_type == 'none'
 
         desired_ports = lrp_builder.ports
         actions       = []
@@ -193,22 +204,23 @@ module VCAP::CloudController
 
       def build_action(lrp_builder, port, index)
         extra_args = []
-        if app_request['health_check_type'] == 'http' && index == 0
-          extra_args << "-uri=#{app_request['health_check_http_endpoint']}"
+        if process.health_check_type == 'http' && index == 0
+          extra_args << "-uri=#{process.health_check_http_endpoint}"
         end
 
         ::Diego::Bbs::Models::RunAction.new(
           user:                lrp_builder.action_user,
           path:                '/tmp/lifecycle/healthcheck',
           args:                ["-port=#{port}"].concat(extra_args),
-          resource_limits:     ::Diego::Bbs::Models::ResourceLimits.new(nofile: file_descriptor_limit(app_request['file_descriptors'])),
+          resource_limits:     ::Diego::Bbs::Models::ResourceLimits.new(nofile: file_descriptor_limit(process.file_descriptors)),
           log_source:          HEALTH_LOG_SOURCE,
           suppress_log_output: true,
         )
       end
 
       def generate_egress_rules
-        app_request['egress_rules'].map do |rule|
+        egress_rules = Diego::EgressRules.new
+        egress_rules.running(process).map do |rule|
           ::Diego::Bbs::Models::SecurityGroupRule.new(
             protocol:     rule['protocol'],
             destinations: rule['destinations'],
@@ -223,9 +235,9 @@ module VCAP::CloudController
       def generate_network
         network = ::Diego::Bbs::Models::Network.new(properties: [])
 
-        app_request['network']['properties'].each do |key, value|
+        Protocol::ContainerNetworkInfo.new(process).properties.each do |key, value|
           network.properties << ::Diego::Bbs::Models::Network::PropertiesEntry.new(
-            key:   key,
+            key:   key.to_s,
             value: value,
           )
         end
