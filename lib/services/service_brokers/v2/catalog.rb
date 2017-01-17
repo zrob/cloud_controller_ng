@@ -51,6 +51,10 @@ module VCAP::Services::ServiceBrokers::V2
     end
 
     def validate_services
+      if !services.is_a? Array
+        errors.add("Service broker must be an array, #{services.class} detected")
+        return
+      end
       services.each do |service|
         errors.add_nested(service, service.errors) unless service.valid?
       end
