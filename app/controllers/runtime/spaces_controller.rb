@@ -131,7 +131,7 @@ module VCAP::CloudController
       raise_if_has_dependent_associations!(space) unless recursive_delete?
       raise_if_dependency_present!(space) unless recursive_delete?
 
-      @space_event_repository.record_space_delete_request(space, SecurityContext.current_user, SecurityContext.current_user_email, recursive_delete?)
+      @space_event_repository.record_space_delete_request(space, UserAuditInfo.from_context(SecurityContext), recursive_delete?)
 
       delete_action = SpaceDelete.new(current_user.guid, current_user_email, @services_event_repository)
       deletion_job = VCAP::CloudController::Jobs::DeleteActionJob.new(Space, guid, delete_action)
@@ -263,11 +263,11 @@ module VCAP::CloudController
     end
 
     def after_create(space)
-      @space_event_repository.record_space_create(space, SecurityContext.current_user, SecurityContext.current_user_email, request_attrs)
+      @space_event_repository.record_space_create(space, UserAuditInfo.from_context(SecurityContext), request_attrs)
     end
 
     def after_update(space)
-      @space_event_repository.record_space_update(space, SecurityContext.current_user, SecurityContext.current_user_email, request_attrs)
+      @space_event_repository.record_space_update(space, UserAuditInfo.from_context(SecurityContext), request_attrs)
     end
 
     def raise_if_dependency_present!(space)

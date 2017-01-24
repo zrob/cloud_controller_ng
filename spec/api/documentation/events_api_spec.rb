@@ -359,7 +359,11 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Space Create Events' do
-      space_event_repository.record_space_create(test_space, test_user, test_user_email, space_request)
+      space_event_repository.record_space_create(
+        test_space,
+        VCAP::CloudController::UserAuditInfo.new(user_guid: test_user.guid, user_email: test_user_email),
+        space_request
+      )
 
       client.get '/v2/events?q=type:audit.space.create', {}, headers
       expect(status).to eq(200)
@@ -376,7 +380,11 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Space Update Events' do
-      space_event_repository.record_space_update(test_space, test_user, test_user_email, space_request)
+      space_event_repository.record_space_update(
+        test_space,
+        VCAP::CloudController::UserAuditInfo.new(user_guid: test_user.guid, user_email: test_user_email),
+        space_request
+      )
 
       client.get '/v2/events?q=type:audit.space.update', {}, headers
       expect(status).to eq(200)
@@ -393,7 +401,11 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Space Delete Events' do
-      space_event_repository.record_space_delete_request(test_space, test_user, test_user_email, true)
+      space_event_repository.record_space_delete_request(
+        test_space,
+        VCAP::CloudController::UserAuditInfo.new(user_guid: test_user.guid, user_email: test_user_email),
+        true
+      )
 
       client.get '/v2/events?q=type:audit.space.delete-request', {}, headers
       expect(status).to eq(200)
