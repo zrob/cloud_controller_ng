@@ -194,8 +194,7 @@ module VCAP::CloudController
           org,
           user,
           role,
-          SecurityContext.current_user,
-          SecurityContext.current_user_email,
+          UserAuditInfo.from_context(SecurityContext),
           request_attrs
         )
 
@@ -212,8 +211,7 @@ module VCAP::CloudController
           Organization.first(guid: guid),
           user,
           role.to_s,
-          SecurityContext.current_user,
-          SecurityContext.current_user_email,
+          UserAuditInfo.from_context(SecurityContext),
           {}
         )
 
@@ -277,7 +275,7 @@ module VCAP::CloudController
       org = find_guid_and_validate_access(:update, guid)
       org.send("add_#{role}", user)
 
-      @user_event_repository.record_organization_role_add(org, user, role, SecurityContext.current_user, SecurityContext.current_user_email, request_attrs)
+      @user_event_repository.record_organization_role_add(org, user, role, UserAuditInfo.from_context(SecurityContext), request_attrs)
 
       [HTTP::CREATED, object_renderer.render_json(self.class, org, @opts)]
     end

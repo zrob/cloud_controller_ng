@@ -410,7 +410,8 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Associate Role Space Events' do
-      user_event_repository.record_space_role_add(test_space, test_assignee, 'auditor', test_user, test_user_email)
+      user_event_repository.record_space_role_add(test_space, test_assignee, 'auditor',
+        VCAP::CloudController::UserAuditInfo.new(user_guid: test_user.guid, user_email: test_user_email))
 
       client.get '/v2/events?q=type:audit.user.space_auditor_add', {}, headers
       expect(status).to eq(200)
@@ -427,7 +428,8 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     example 'List Remove Role Space Events' do
-      user_event_repository.record_space_role_remove(test_space, test_assignee, 'auditor', test_user, test_user_email)
+      user_event_repository.record_space_role_remove(test_space, test_assignee, 'auditor',
+        VCAP::CloudController::UserAuditInfo.new(user_guid: test_user.guid, user_email: test_user_email))
 
       client.get '/v2/events?q=type:audit.user.space_auditor_remove', {}, headers
       expect(status).to eq(200)

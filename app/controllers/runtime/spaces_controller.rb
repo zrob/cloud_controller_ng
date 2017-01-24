@@ -247,7 +247,7 @@ module VCAP::CloudController
       space = find_guid_and_validate_access(:update, guid)
       space.send("add_#{role}", user)
 
-      @user_event_repository.record_space_role_add(space, user, role, SecurityContext.current_user, SecurityContext.current_user_email, request_attrs)
+      @user_event_repository.record_space_role_add(space, user, role, UserAuditInfo.from_context(SecurityContext), request_attrs)
 
       [HTTP::CREATED, object_renderer.render_json(self.class, space, @opts)]
     end
@@ -259,7 +259,7 @@ module VCAP::CloudController
 
       space.send("remove_#{role}", user)
 
-      @user_event_repository.record_space_role_remove(space, user, role, SecurityContext.current_user, SecurityContext.current_user_email, request_attrs)
+      @user_event_repository.record_space_role_remove(space, user, role, UserAuditInfo.from_context(SecurityContext), request_attrs)
     end
 
     def after_create(space)

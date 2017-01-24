@@ -3,25 +3,25 @@ require 'pry'
 module VCAP::CloudController
   module Repositories
     class UserEventRepository
-      def record_space_role_add(space, assignee, role, actor, actor_name, request_attrs={})
-        record_space_role_event("audit.user.space_#{role}_add", space, assignee, actor, actor_name, request_attrs)
+      def record_space_role_add(space, assignee, role, actor_audit_info, request_attrs={})
+        record_space_role_event("audit.user.space_#{role}_add", space, assignee, actor_audit_info, request_attrs)
       end
 
-      def record_space_role_remove(space, assignee, role, actor, actor_name, request_attrs={})
-        record_space_role_event("audit.user.space_#{role}_remove", space, assignee, actor, actor_name, request_attrs)
+      def record_space_role_remove(space, assignee, role, actor_audit_info, request_attrs={})
+        record_space_role_event("audit.user.space_#{role}_remove", space, assignee, actor_audit_info, request_attrs)
       end
 
-      def record_organization_role_add(organization, assignee, role, actor, actor_name, request_attrs={})
-        record_organization_role_event("audit.user.organization_#{role}_add", organization, assignee, actor, actor_name, request_attrs)
+      def record_organization_role_add(organization, assignee, role, actor_audit_info, request_attrs={})
+        record_organization_role_event("audit.user.organization_#{role}_add", organization, assignee, actor_audit_info, request_attrs)
       end
 
-      def record_organization_role_remove(organization, assignee, role, actor, actor_name, request_attrs={})
-        record_organization_role_event("audit.user.organization_#{role}_remove", organization, assignee, actor, actor_name, request_attrs)
+      def record_organization_role_remove(organization, assignee, role, actor_audit_info, request_attrs={})
+        record_organization_role_event("audit.user.organization_#{role}_remove", organization, assignee, actor_audit_info, request_attrs)
       end
 
       private
 
-      def record_space_role_event(type, space, assignee, actor, actor_name, request_attrs)
+      def record_space_role_event(type, space, assignee, actor_audit_info, request_attrs)
         username = assignee.username ? assignee.username : ''
         Event.create(
           type:       type,
@@ -29,9 +29,9 @@ module VCAP::CloudController
           actee:      assignee.guid,
           actee_type: 'user',
           actee_name: username,
-          actor:      actor.guid,
+          actor:      actor_audit_info.user_guid,
           actor_type: 'user',
-          actor_name: actor_name,
+          actor_name: actor_audit_info.user_email,
           timestamp:  Sequel::CURRENT_TIMESTAMP,
           metadata:   {
               request: request_attrs
@@ -39,7 +39,7 @@ module VCAP::CloudController
         )
       end
 
-      def record_organization_role_event(type, organization, assignee, actor, actor_name, request_attrs)
+      def record_organization_role_event(type, organization, assignee, actor_audit_info, request_attrs)
         username = assignee.username ? assignee.username : ''
         Event.create(
           type:       type,
@@ -47,9 +47,9 @@ module VCAP::CloudController
           actee:      assignee.guid,
           actee_type: 'user',
           actee_name: username,
-          actor:      actor.guid,
+          actor:      actor_audit_info.user_guid,
           actor_type: 'user',
-          actor_name: actor_name,
+          actor_name: actor_audit_info.user_email,
           timestamp:  Sequel::CURRENT_TIMESTAMP,
           metadata:   {
               request: request_attrs
