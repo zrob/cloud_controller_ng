@@ -151,8 +151,7 @@ module VCAP::CloudController
       route_delete_action = RouteDelete.new(
         app_event_repository:   app_event_repository,
         route_event_repository: route_event_repository,
-        user:                   SecurityContext.current_user,
-        user_email:             SecurityContext.current_user_email)
+        user_audit_info:        UserAuditInfo.from_context(SecurityContext))
 
       if async?
         job = route_delete_action.delete_async(route: route, recursive: recursive_delete?)
@@ -211,11 +210,11 @@ module VCAP::CloudController
     end
 
     def after_create(route)
-      @route_event_repository.record_route_create(route, SecurityContext.current_user, SecurityContext.current_user_email, request_attrs)
+      @route_event_repository.record_route_create(route, UserAuditInfo.from_context(SecurityContext), request_attrs)
     end
 
     def after_update(route)
-      @route_event_repository.record_route_update(route, SecurityContext.current_user, SecurityContext.current_user_email, request_attrs)
+      @route_event_repository.record_route_update(route, UserAuditInfo.from_context(SecurityContext), request_attrs)
     end
 
     put '/v2/routes/:route_guid/apps/:app_guid', :add_app
