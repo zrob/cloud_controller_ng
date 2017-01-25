@@ -90,7 +90,7 @@ class AppsV3Controller < ApplicationController
     app_not_found! unless app && can_read?(space.guid, org.guid)
     unauthorized! unless can_write?(space.guid)
 
-    AppDelete.new(current_user.guid, current_user_email).delete(app)
+    AppDelete.new(user_audit_info).delete(app)
 
     head :no_content
   rescue AppDelete::InvalidDelete => e
@@ -149,7 +149,7 @@ class AppsV3Controller < ApplicationController
 
     droplet_not_found! if droplet.nil?
 
-    SetCurrentDroplet.new(current_user, current_user_email).update_to(app, droplet)
+    SetCurrentDroplet.new(user_audit_info).update_to(app, droplet)
 
     render status: :ok, json: Presenters::V3::DropletPresenter.new(droplet)
   rescue SetCurrentDroplet::InvalidApp => e

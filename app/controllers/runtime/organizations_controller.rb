@@ -227,7 +227,7 @@ module VCAP::CloudController
         raise CloudController::Errors::ApiError.new_from_details('AssociationNotEmpty', 'spaces', Organization.table_name)
       end
 
-      delete_action = OrganizationDelete.new(SpaceDelete.new(current_user.guid, current_user_email, @services_event_repository))
+      delete_action = OrganizationDelete.new(SpaceDelete.new(UserAuditInfo.from_context(SecurityContext), @services_event_repository))
       deletion_job = VCAP::CloudController::Jobs::DeleteActionJob.new(Organization, guid, delete_action)
       enqueue_deletion_job(deletion_job)
     end
