@@ -6,19 +6,9 @@ module VCAP::CloudController
       let(:user) { VCAP::CloudController::User.make }
       let(:email) { 'email@example.com' }
       let(:logger) { double(:logger, error: nil) }
-      let(:repository) { ServiceEventRepository.new(user: user, user_email: email) }
+      let(:repository) { ServiceEventRepository.new(UserAuditInfo.new(user_guid: user.guid, user_email: email)) }
       before do
         allow(repository).to receive(:logger).and_return(logger)
-      end
-
-      describe 'attributes' do
-        it 'has user' do
-          expect(repository.user).to eq(user)
-        end
-
-        it 'has user_email' do
-          expect(repository.current_user_email).to eq(email)
-        end
       end
 
       describe 'record_service_plan_visibility_event' do

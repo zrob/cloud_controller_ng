@@ -334,7 +334,7 @@ module VCAP::CloudController
       service_binding = ServiceBinding.find(guid: request_attrs['service_binding'])
       raise CloudController::Errors::ApiError.new_from_details('ServiceBindingNotFound', service_binding_guid) unless service_binding
 
-      ServiceBindingDelete.new(SecurityContext.current_user.guid, SecurityContext.current_user_email).single_delete_sync(service_binding)
+      ServiceBindingDelete.new(UserAuditInfo.from_context(SecurityContext)).single_delete_sync(service_binding)
 
       after_update(process)
 

@@ -198,7 +198,7 @@ RSpec.resource 'Events', type: [:api, :legacy_api] do
     end
 
     let(:service_event_repository) do
-      VCAP::CloudController::Repositories::ServiceEventRepository.new(user: test_user, user_email: test_user_email)
+      VCAP::CloudController::Repositories::ServiceEventRepository.new(VCAP::CloudController::UserAuditInfo.new(user_guid: test_user.guid, user_email: test_user_email))
     end
 
     example 'List App Create Events' do
