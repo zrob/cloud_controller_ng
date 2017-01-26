@@ -66,7 +66,7 @@ module VCAP::CloudController
       it 'schedules it at the appropriate time' do
         clock.schedule_frequent_job(:some_name, some_class)
 
-        expect(Clockwork).to have_received(:every).with(507, 'some_name.job')
+        expect(Clockwork).to have_received(:every).with(507, 'some_name.job', {})
       end
 
       it 'schedules it at the appropriate priority' do

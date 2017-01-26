@@ -18,10 +18,10 @@ module VCAP::CloudController
       end
     end
 
-    def schedule_frequent_job(name, klass, priority: nil)
+    def schedule_frequent_job(name, klass, queue: 'cc-generic', priority: nil, extra_options: {})
       config = @config.fetch(name.to_sym)
 
-      Clockwork.every(config.fetch(:frequency_in_seconds), "#{name}.job") do |_|
+      Clockwork.every(config.fetch(:frequency_in_seconds), "#{name}.job", extra_options) do |_|
         @logger.info("Queueing #{klass} at #{Time.now.utc}")
         expiration = config[:expiration_in_seconds]
         job = if expiration
@@ -29,7 +29,7 @@ module VCAP::CloudController
               else
                 klass.new
               end
-        opts = { queue: 'cc-generic' }
+        opts = { queue: queue }
         opts[:priority] = priority if priority
         Jobs::Enqueuer.new(job, opts).enqueue
       end
