@@ -8,6 +8,7 @@ module VCAP::CloudController
       let(:user_guid) { 'user_guid' }
       let(:package) { PackageModel.make(app_guid: app.guid) }
       let(:email) { 'user-email' }
+      let(:user_audit_info) { UserAuditInfo.new(user_email: email, user_guid: user_guid) }
 
       describe '#record_app_package_create' do
         context 'when request attrs include data' do
@@ -19,7 +20,7 @@ module VCAP::CloudController
           end
 
           it 'creates a new audit.app.start event' do
-            event = PackageEventRepository.record_app_package_create(package, user_guid, email, request_attrs)
+            event = PackageEventRepository.record_app_package_create(package, user_audit_info, request_attrs)
             event.reload
 
             expect(event.type).to eq('audit.app.package.create')
@@ -45,7 +46,7 @@ module VCAP::CloudController
           let(:request_attrs) { { 'app_guid' => app.guid, 'type' => 'bits' } }
 
           it 'creates a new audit.app.start event' do
-            event = PackageEventRepository.record_app_package_create(package, user_guid, email, request_attrs)
+            event = PackageEventRepository.record_app_package_create(package, user_audit_info, request_attrs)
             event.reload
 
             expect(event.type).to eq('audit.app.package.create')
@@ -71,7 +72,7 @@ module VCAP::CloudController
         let(:source_package_guid) { '123-some-guid' }
 
         it 'creates a new audit.app.copy event' do
-          event = PackageEventRepository.record_app_package_copy(package, user_guid, email, source_package_guid)
+          event = PackageEventRepository.record_app_package_copy(package, user_audit_info, source_package_guid)
           event.reload
 
           expect(event.type).to eq('audit.app.package.create')
@@ -94,7 +95,7 @@ module VCAP::CloudController
 
       describe 'record_app_package_upload' do
         it 'creates a new upload event' do
-          event = PackageEventRepository.record_app_package_upload(package, user_guid, email)
+          event = PackageEventRepository.record_app_package_upload(package, user_audit_info)
           event.reload
 
           expect(event.type).to eq('audit.app.package.upload')
@@ -114,7 +115,7 @@ module VCAP::CloudController
 
       describe 'record_app_package_delete' do
         it 'creates a new package delete event' do
-          event = PackageEventRepository.record_app_package_delete(package, user_guid, email)
+          event = PackageEventRepository.record_app_package_delete(package, user_audit_info)
           event.reload
 
           expect(event.type).to eq('audit.app.package.delete')
@@ -134,7 +135,7 @@ module VCAP::CloudController
 
       describe 'record_app_package_download' do
         it 'creates a new package download event' do
-          event = PackageEventRepository.record_app_package_download(package, user_guid, email)
+          event = PackageEventRepository.record_app_package_download(package, user_audit_info)
           event.reload
 
           expect(event.type).to eq('audit.app.package.download')
