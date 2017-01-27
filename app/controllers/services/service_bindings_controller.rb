@@ -86,7 +86,7 @@ module VCAP::CloudController
     private
 
     def filter_dataset(dataset)
-      dataset.select_all(ServiceBinding.table_name).join(App, app_guid: :app_guid, type: 'web')
+      dataset.select_all(ServiceBinding.table_name).join(Process, app_guid: :app_guid, type: 'web')
     end
 
     def volume_services_enabled?

@@ -54,7 +54,7 @@ module VCAP::CloudController
     end
 
     let(:v3_app) { AppModel.make(droplet: droplet) }
-    let(:process) { App.make(app: v3_app) }
+    let(:process) { Process.make(app: v3_app) }
     let(:droplet) { DropletModel.make(state: 'STAGED') }
 
     before do

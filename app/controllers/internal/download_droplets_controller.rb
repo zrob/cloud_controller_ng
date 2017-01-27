@@ -18,7 +18,7 @@ module VCAP::CloudController
 
     get "#{DROPLET_V2_PATH}/:guid/:droplet_checksum/download", :download_droplet
     def download_droplet(guid, droplet_checksum)
-      app = App.find(guid: guid)
+      app = Process.find(guid: guid)
       check_app_exists(app, guid)
       raise ApiError.new_from_details('NotFound', droplet_checksum) unless app.droplet_checksum == droplet_checksum
 

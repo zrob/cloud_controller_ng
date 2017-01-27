@@ -11,7 +11,7 @@ RSpec.describe 'Processes' do
 
   describe 'GET /v3/processes' do
     let!(:web_process) {
-      VCAP::CloudController::ProcessModel.make(
+      VCAP::CloudController::Process.make(
         :process,
         app:        app_model,
         type:       'web',
@@ -22,7 +22,7 @@ RSpec.describe 'Processes' do
       )
     }
     let!(:worker_process) {
-      VCAP::CloudController::ProcessModel.make(
+      VCAP::CloudController::Process.make(
         :process,
         app:        app_model,
         type:       'worker',
@@ -33,7 +33,7 @@ RSpec.describe 'Processes' do
       )
     }
 
-    before { VCAP::CloudController::ProcessModel.make(:process, app: app_model) }
+    before { VCAP::CloudController::Process.make(:process, app: app_model) }
 
     it 'returns a paginated list of processes' do
       get '/v3/processes?per_page=2', nil, developer_headers
@@ -133,7 +133,7 @@ RSpec.describe 'Processes' do
         let(:other_space) { VCAP::CloudController::Space.make(organization: space.organization) }
         let(:other_app_model) { VCAP::CloudController::AppModel.make(space: other_space) }
         let!(:other_space_process) {
-          VCAP::CloudController::ProcessModel.make(
+          VCAP::CloudController::Process.make(
             :process,
             app:        other_app_model,
             type:       'web',
@@ -174,7 +174,7 @@ RSpec.describe 'Processes' do
         let(:other_space) { VCAP::CloudController::Space.make }
         let!(:other_org) { other_space.organization }
         let!(:other_space_process) {
-          VCAP::CloudController::ProcessModel.make(
+          VCAP::CloudController::Process.make(
             :process,
             app:        other_app_model,
             type:       'web',
@@ -212,7 +212,7 @@ RSpec.describe 'Processes' do
       context 'by app guids' do
         let(:desired_app) { VCAP::CloudController::AppModel.make(space: space) }
         let!(:desired_process) do
-          VCAP::CloudController::ProcessModel.make(:process,
+          VCAP::CloudController::Process.make(:process,
             app:        desired_app,
             type:       'persnickety',
             instances:  3,
@@ -271,7 +271,7 @@ RSpec.describe 'Processes' do
 
   describe 'GET /v3/processes/:guid' do
     it 'retrieves the process' do
-      process = VCAP::CloudController::ProcessModel.make(
+      process = VCAP::CloudController::Process.make(
         :process,
         app:        app_model,
         type:       'web',
@@ -315,7 +315,7 @@ RSpec.describe 'Processes' do
     end
 
     it 'redacts information for auditors' do
-      process = VCAP::CloudController::ProcessModel.make(:process, app: app_model, command: 'rackup')
+      process = VCAP::CloudController::Process.make(:process, app: app_model, command: 'rackup')
 
       auditor = VCAP::CloudController::User.make
       space.organization.add_user(auditor)
@@ -332,7 +332,7 @@ RSpec.describe 'Processes' do
 
   describe 'GET /v3/processes/:guid/stats' do
     it 'succeeds when TPS is an older version without net_info' do
-      process = VCAP::CloudController::ProcessModel.make(:process, type: 'worker', app: app_model)
+      process = VCAP::CloudController::Process.make(:process, type: 'worker', app: app_model)
 
       usage_time   = Time.now.utc.to_s
       tps_response = [{
@@ -360,7 +360,7 @@ RSpec.describe 'Processes' do
     end
 
     it 'retrieves the stats for a process' do
-      process = VCAP::CloudController::ProcessModel.make(:process, type: 'worker', app: app_model)
+      process = VCAP::CloudController::Process.make(:process, type: 'worker', app: app_model)
 
       usage_time   = Time.now.utc.to_s
       tps_response = [{
@@ -425,7 +425,7 @@ RSpec.describe 'Processes' do
 
   describe 'PATCH /v3/processes/:guid' do
     it 'updates the process' do
-      process = VCAP::CloudController::ProcessModel.make(
+      process = VCAP::CloudController::Process.make(
         :process,
         app:                  app_model,
         type:                 'web',
@@ -517,7 +517,7 @@ RSpec.describe 'Processes' do
 
   describe 'PUT /v3/processes/:guid/scale' do
     it 'scales the process' do
-      process = VCAP::CloudController::ProcessModel.make(
+      process = VCAP::CloudController::Process.make(
         :process,
         app:        app_model,
         type:       'web',
@@ -597,7 +597,7 @@ RSpec.describe 'Processes' do
 
   describe 'DELETE /v3/processes/:guid/instances/:index' do
     it 'terminates a single instance of a process' do
-      process = VCAP::CloudController::ProcessModel.make(:process, type: 'web', app: app_model)
+      process = VCAP::CloudController::Process.make(:process, type: 'web', app: app_model)
 
       process_guid = VCAP::CloudController::Diego::ProcessGuid.from_process(process)
       stub_request(:delete, "http://nsync.service.cf.internal:8787/v1/apps/#{process_guid}/index/0").to_return(status: 202, body: '')
@@ -628,7 +628,7 @@ RSpec.describe 'Processes' do
 
   describe 'GET /v3/apps/:guid/processes' do
     let!(:process1) {
-      VCAP::CloudController::ProcessModel.make(
+      VCAP::CloudController::Process.make(
         :process,
         app:        app_model,
         type:       'web',
@@ -640,7 +640,7 @@ RSpec.describe 'Processes' do
     }
 
     let!(:process2) {
-      VCAP::CloudController::ProcessModel.make(
+      VCAP::CloudController::Process.make(
         :process,
         app:        app_model,
         type:       'worker',
@@ -652,7 +652,7 @@ RSpec.describe 'Processes' do
     }
 
     let!(:process3) {
-      VCAP::CloudController::ProcessModel.make(:process, app: app_model)
+      VCAP::CloudController::Process.make(:process, app: app_model)
     }
 
     it 'returns a paginated list of processes for an app' do
@@ -776,7 +776,7 @@ RSpec.describe 'Processes' do
 
   describe 'GET /v3/apps/:guid/processes/:type' do
     it 'retrieves the process for an app with the requested type' do
-      process = VCAP::CloudController::ProcessModel.make(
+      process = VCAP::CloudController::Process.make(
         :process,
         app:        app_model,
         type:       'web',
@@ -820,7 +820,7 @@ RSpec.describe 'Processes' do
     end
 
     it 'redacts information for auditors' do
-      VCAP::CloudController::ProcessModel.make(:process, app: app_model, type: 'web', command: 'rackup')
+      VCAP::CloudController::Process.make(:process, app: app_model, type: 'web', command: 'rackup')
 
       auditor = VCAP::CloudController::User.make
       space.organization.add_user(auditor)
@@ -837,7 +837,7 @@ RSpec.describe 'Processes' do
 
   describe 'GET /v3/apps/:guid/processes/:type/stats' do
     it 'succeeds when TPS is an older version without net_info' do
-      process = VCAP::CloudController::ProcessModel.make(:process, type: 'worker', app: app_model)
+      process = VCAP::CloudController::Process.make(:process, type: 'worker', app: app_model)
 
       usage_time   = Time.now.utc.to_s
       tps_response = [{
@@ -865,7 +865,7 @@ RSpec.describe 'Processes' do
     end
 
     it 'retrieves the stats for a process belonging to an app' do
-      process = VCAP::CloudController::ProcessModel.make(:process, type: 'worker', app: app_model)
+      process = VCAP::CloudController::Process.make(:process, type: 'worker', app: app_model)
 
       usage_time   = Time.now.utc.to_s
       tps_response = [{
@@ -930,7 +930,7 @@ RSpec.describe 'Processes' do
 
   describe 'PUT /v3/apps/:guid/processes/:type/scale' do
     it 'scales the process belonging to an app' do
-      process = VCAP::CloudController::ProcessModel.make(
+      process = VCAP::CloudController::Process.make(
         :process,
         app:        app_model,
         type:       'web',
@@ -1010,7 +1010,7 @@ RSpec.describe 'Processes' do
 
   describe 'DELETE /v3/apps/:guid/processes/:type/instances/:index' do
     it 'terminates a single instance of a process belonging to an app' do
-      process = VCAP::CloudController::ProcessModel.make(:process, type: 'web', app: app_model)
+      process = VCAP::CloudController::Process.make(:process, type: 'web', app: app_model)
 
       process_guid = VCAP::CloudController::Diego::ProcessGuid.from_process(process)
       stub_request(:delete, "http://nsync.service.cf.internal:8787/v1/apps/#{process_guid}/index/0").to_return(status: 202, body: '')

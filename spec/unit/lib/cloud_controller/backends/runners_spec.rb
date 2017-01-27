@@ -156,7 +156,7 @@ module VCAP::CloudController
       end
 
       it 'accepts a process guid or an array of process guids' do
-        app          = App.where(diego: true).order(:id).first
+        app          = Process.where(diego: true).order(:id).first
         process_guid = Diego::ProcessGuid.from_process(app)
 
         expect(runners.diego_apps_from_process_guids(process_guid)).to eq([app])
@@ -164,7 +164,7 @@ module VCAP::CloudController
       end
 
       it 'returns diego apps for each requested process guid' do
-        diego_apps  = App.where(diego: true).all
+        diego_apps  = Process.where(diego: true).all
         diego_guids = diego_apps.map { |app| Diego::ProcessGuid.from_process(app) }
 
         expect(runners.diego_apps_from_process_guids(diego_guids)).to match_array(diego_apps)
@@ -172,7 +172,7 @@ module VCAP::CloudController
 
       context 'when the process guid is not found' do
         it 'does not return an app' do
-          app          = App.where(diego: true).order(:id).first
+          app          = Process.where(diego: true).order(:id).first
           process_guid = Diego::ProcessGuid.from_process(app)
 
           expect {
@@ -334,7 +334,7 @@ module VCAP::CloudController
 
       it 'returns the largest process id from the query' do
         _, process_id = runners.dea_apps_hm9k
-        expect(process_id).to equal(App.dataset.order(:id).last.id)
+        expect(process_id).to equal(Process.dataset.order(:id).last.id)
       end
     end
 
@@ -405,7 +405,7 @@ module VCAP::CloudController
 
     describe '#package_state' do
       let(:parent_app) { AppModel.make }
-      subject(:app) { App.make(app: parent_app) }
+      subject(:app) { Process.make(app: parent_app) }
 
       context 'when no package exists' do
         it 'is PENDING' do

@@ -5,11 +5,11 @@ module VCAP::CloudController
     end
 
     def fetch_all
-      filter(ProcessModel.dataset)
+      filter(Process.dataset)
     end
 
     def fetch_for_spaces(space_guids:)
-      dataset = ProcessModel.dataset.where(space: Space.where(guid: space_guids))
+      dataset = Process.dataset.where(space: Space.where(guid: space_guids))
       filter(dataset)
     end
 

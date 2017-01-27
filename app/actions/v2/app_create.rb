@@ -17,7 +17,7 @@ module VCAP::CloudController
 
           create_lifecycle(app, request_attrs)
 
-          process = App.new(
+          process = Process.new(
             guid:                    app.guid,
             production:              request_attrs['production'],
             memory:                  request_attrs['memory'],

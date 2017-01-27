@@ -63,7 +63,7 @@ module VCAP::CloudController
             return
           end
 
-          app = App[guid: app_id]
+          app = Process[guid: app_id]
           should_start, reason = instance_needs_to_start?(app, version, instance_index)
           if should_start
             AppStarterTask.new(app, CloudController::DependencyLocator.instance.blobstore_url_generator, dea_client.config).start(specific_instances: instance_index)
@@ -76,7 +76,7 @@ module VCAP::CloudController
         end
 
         def instance_needs_to_stop?(app_id, version, instance_index, is_duplicate)
-          app = App[guid: app_id]
+          app = Process[guid: app_id]
 
           if !app
             return true, 'App not found'

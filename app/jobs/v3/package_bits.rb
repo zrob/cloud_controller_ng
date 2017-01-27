@@ -12,7 +12,11 @@ module VCAP::CloudController
 
         def perform
           Steno.logger('cc.background').info("Packing the app bits for package '#{@package_guid}'")
+          Steno.logger('banana').info('############Looking for VCAP::CloudController:App######')
+          VCAP::CloudController::App.first
           CloudController::Packager::PackageUploadHandler.new(@package_guid, @package_zip_path, @fingerprints).pack
+        rescue => e
+          Steno.logger('banana').info("########{e.inspect}######")
         end
 
         def job_name_in_configuration

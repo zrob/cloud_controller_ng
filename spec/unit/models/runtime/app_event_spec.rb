@@ -5,7 +5,7 @@ module VCAP::CloudController
     it { is_expected.to have_timestamp_columns }
 
     describe 'Associations' do
-      it { is_expected.to have_associated :app }
+      it { is_expected.to have_associated :app, {class: VCAP::CloudController::Process} }
     end
 
     describe 'Validations' do

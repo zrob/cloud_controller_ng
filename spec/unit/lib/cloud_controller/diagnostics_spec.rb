@@ -113,7 +113,7 @@ module VCAP::CloudController
         end
 
         it 'uses a file name that includes the pid' do
-          expect(diagnostics.collect(output_dir, updater)).to match_regex(/#{Process.pid}/)
+          expect(diagnostics.collect(output_dir, updater)).to match_regex(/#{::Process.pid}/)
         end
       end
 

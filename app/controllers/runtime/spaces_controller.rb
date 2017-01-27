@@ -16,7 +16,7 @@ module VCAP::CloudController
       to_many :developers
       to_many :managers
       to_many :auditors
-      to_many :apps,                    exclude_in: [:create, :update], route_for: :get
+      to_many :apps,                    exclude_in: [:create, :update], route_for: :get, association_controller: :AppsController
       to_many :routes,                  exclude_in: [:create, :update], route_for: :get
       to_many :domains
       to_many :service_instances,       route_for: :get

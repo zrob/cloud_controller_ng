@@ -551,7 +551,7 @@ module VCAP::CloudController
         expect {
           subject.destroy
         }.to change {
-          App.where(id: [app1.id, app2.id, app3.id]).count
+          Process.where(id: [app1.id, app2.id, app3.id]).count
         }.by(-3)
       end
     end

@@ -20,7 +20,7 @@ module VCAP::CloudController
       def number_of_starting_and_running_instances_for_processes(processes)
         return {} if processes.empty?
 
-        processes_with_running_instances = App.select_all(App.table_name).
+        processes_with_running_instances = Process.select_all(Process.table_name).
                                            runnable.
                                            dea.
                                            where(space: processes.first.space).all

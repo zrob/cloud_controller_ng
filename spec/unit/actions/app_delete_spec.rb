@@ -51,11 +51,11 @@ module VCAP::CloudController
         end
 
         it 'deletes associated processes' do
-          process = App.make(app: app)
+          process = Process.make(app: app)
 
           expect {
             app_delete.delete(app_dataset)
-          }.to change { App.count }.by(-1)
+          }.to change { Process.count }.by(-1)
           expect(process.exists?).to be_falsey
           expect(app.exists?).to be_falsey
         end

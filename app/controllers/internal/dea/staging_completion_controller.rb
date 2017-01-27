@@ -28,7 +28,7 @@ module VCAP::CloudController
       def completed(process_guid)
         staging_response = read_body
 
-        process = App.find(guid: process_guid)
+        process = Process.find(guid: process_guid)
         raise CloudController::Errors::ApiError.new_from_details('ProcessNotFound', process_guid) unless process
 
         droplet = process.latest_droplet

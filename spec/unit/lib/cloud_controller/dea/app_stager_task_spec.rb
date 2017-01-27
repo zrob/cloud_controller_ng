@@ -235,7 +235,7 @@ module VCAP::CloudController
             # fake out the app refresh as the race happens after it
             allow(app).to receive(:refresh)
 
-            other_app_ref         = App.find(guid: app.guid)
+            other_app_ref         = Process.find(guid: app.guid)
             other_app_ref.command = 'some other command'
             other_app_ref.save
 
@@ -749,7 +749,7 @@ module VCAP::CloudController
               # fake out the app refresh as the race happens after it
               allow(app).to receive(:refresh)
 
-              other_app_ref         = App.find(guid: app.guid)
+              other_app_ref         = Process.find(guid: app.guid)
               other_app_ref.command = 'some other command'
               other_app_ref.save
 
@@ -775,7 +775,7 @@ module VCAP::CloudController
             end
 
             it 'records a buildpack set event for each process' do
-              App.make(app: app.app, type: 'asdf')
+              Process.make(app: app.app, type: 'asdf')
               expect {
                 stage
               }.to change { AppUsageEvent.where(state: 'BUILDPACK_SET').count }.to(2).from(0)

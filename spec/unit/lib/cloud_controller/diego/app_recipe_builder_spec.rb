@@ -25,7 +25,7 @@ module VCAP::CloudController
         let(:app_model) { AppModel.make(lifecycle_type, guid: 'banana-guid', droplet: DropletModel.make(state: 'STAGED')) }
         let(:package) { PackageModel.make(lifecycle_type, app: app_model) }
         let(:process) do
-          process = ProcessModel.make(:process,
+          process = Process.make(:process,
             app:                  app_model,
             state:                'STARTED',
             diego:                true,
@@ -869,7 +869,7 @@ module VCAP::CloudController
         let(:config) { {} }
         let(:app_model) { AppModel.make(:buildpack, guid: 'banana-guid', droplet: DropletModel.make(state: 'STAGED')) }
         let(:process) do
-          process = ProcessModel.make(:process, instances: 7, app: app_model)
+          process = Process.make(:process, instances: 7, app: app_model)
           process.this.update(updated_at: Time.at(2))
           process.reload
         end

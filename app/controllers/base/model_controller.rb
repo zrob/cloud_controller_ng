@@ -133,7 +133,7 @@ module VCAP::CloudController::RestController
       associated_controller = VCAP::CloudController.controller_from_relationship(all_relationships[name])
       associated_controller ||= VCAP::CloudController.controller_from_model_name(associated_model)
 
-      querier = associated_model == VCAP::CloudController::App ? AppQuery : Query
+      querier = associated_model == VCAP::CloudController::Process ? AppQuery : Query
       filtered_dataset =
         querier.filtered_dataset_from_query_params(
           associated_model,
@@ -359,8 +359,10 @@ module VCAP::CloudController::RestController
       # Model class name associated with this rest/api endpoint.
       #
       # @return [String] The class name of the model associated with
+
+      #TODO: GET RID OF ME
       def not_found_exception_name(model_class)
-        "#{model_class.name.demodulize}NotFound"
+        "#{model_class.try(:name_override) || model_class.name.demodulize}NotFound"
       end
 
       # Lookup the not-found exception for this rest/api endpoint.

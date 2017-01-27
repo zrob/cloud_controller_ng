@@ -31,8 +31,8 @@ module VCAP::CloudController
     describe 'querying by stack guid' do
       let(:stack1) { Stack.make }
       let(:stack2) { Stack.make }
-      let(:app1) { App.make }
-      let(:app2) { App.make }
+      let(:app1) { Process.make }
+      let(:app2) { Process.make }
 
       before do
         app1.app.lifecycle_data.update(stack: stack1.name)
@@ -120,14 +120,14 @@ module VCAP::CloudController
         before { set_current_user_as_admin }
 
         it 'does not return events with inline-relations-depth=0' do
-          app = App.make
+          app = Process.make
           get "/v2/apps/#{app.guid}?inline-relations-depth=0"
           expect(entity).to have_key('events_url')
           expect(entity).to_not have_key('events')
         end
 
         it 'does not return events with inline-relations-depth=1 since app_events dataset is relatively expensive to query' do
-          app = App.make
+          app = Process.make
           get "/v2/apps/#{app.guid}?inline-relations-depth=1"
           expect(entity).to have_key('events_url')
           expect(entity).to_not have_key('events')
@@ -156,7 +156,7 @@ module VCAP::CloudController
 
           post '/v2/apps', MultiJson.dump(initial_hash)
 
-          app = App.last
+          app = Process.last
           expect(app_event_repository).to have_received(:record_app_create).with(app, app.space, admin_user.guid, SecurityContext.current_user_email, expected_attrs)
         end
       end
@@ -333,7 +333,7 @@ module VCAP::CloudController
 
         post '/v2/apps', MultiJson.dump(request)
 
-        v2_app = App.last
+        v2_app = Process.last
         expect(v2_app.health_check_type).to eq('http')
         expect(v2_app.health_check_http_endpoint).to eq('/healthz')
       end
@@ -350,7 +350,7 @@ module VCAP::CloudController
 
         post '/v2/apps', MultiJson.dump(request)
 
-        v2_app = App.last
+        v2_app = Process.last
         expect(v2_app.name).to eq('maria')
         expect(v2_app.space).to eq(space)
         expect(v2_app.environment_json).to eq({ 'KEY' => 'val' })
@@ -383,7 +383,7 @@ module VCAP::CloudController
 
           post '/v2/apps', MultiJson.dump(request)
 
-          v2_app = App.last
+          v2_app = Process.last
           expect(v2_app.stack).to eq(stack)
           expect(v2_app.buildpack.url).to eq('http://example.com/buildpack')
         end
@@ -450,7 +450,7 @@ module VCAP::CloudController
 
           post '/v2/apps', MultiJson.dump(request)
 
-          v2_app = App.last
+          v2_app = Process.last
           expect(v2_app.docker_image).to eq('some-image:latest')
           expect(v2_app.package_hash).to eq('some-image:latest')
 
@@ -480,7 +480,6 @@ module VCAP::CloudController
           set_current_user(admin_user, admin: true)
 
           post '/v2/apps', MultiJson.dump({ name: 'maria', space_guid: 'no-existy' })
-
           expect(last_response.status).to eq(404)
         end
       end
@@ -796,7 +795,7 @@ module VCAP::CloudController
 
         context 'when the update fails' do
           before do
-            allow_any_instance_of(App).to receive(:save).and_raise('Error saving')
+            allow_any_instance_of(Process).to receive(:save).and_raise('Error saving')
             allow(app_event_repository).to receive(:record_app_update)
           end
 
@@ -810,7 +809,7 @@ module VCAP::CloudController
       end
 
       it 'updates the app' do
-        v2_app = App.make
+        v2_app = Process.make
         v3_app = v2_app.app
         stack  = Stack.make(name: 'stack-name')
 
@@ -848,7 +847,7 @@ module VCAP::CloudController
           app_obj.app.lifecycle_data.update(buildpack: Buildpack.make.name)
         end
 
-        let(:app_obj) { App.make }
+        let(:app_obj) { Process.make }
 
         it 'does NOT allow a public git url' do
           put "/v2/apps/#{app_obj.guid}", MultiJson.dump({ buildpack: 'http://example.com/buildpack' })
@@ -943,7 +942,7 @@ module VCAP::CloudController
         end
 
         context 'when the app was never staged' do
-          let(:app_obj) { App.make }
+          let(:app_obj) { Process.make }
 
           it 'does not mark the app for staging' do
             expect(app_obj.staged?).to be_falsey
@@ -961,7 +960,7 @@ module VCAP::CloudController
 
       describe 'changing lifecycle types' do
         context 'when changing from docker to buildpack' do
-          let(:app_obj) { App.make(app: AppModel.make(:docker)) }
+          let(:app_obj) { Process.make(app: AppModel.make(:docker)) }
 
           it 'raises an error setting buildpack' do
             put "/v2/apps/#{app_obj.guid}", MultiJson.dump({ buildpack: 'https://buildpack.example.com' })
@@ -977,7 +976,7 @@ module VCAP::CloudController
         end
 
         context 'when changing from buildpack to docker' do
-          let(:app_obj) { App.make(app: AppModel.make(:buildpack)) }
+          let(:app_obj) { Process.make(app: AppModel.make(:buildpack)) }
 
           it 'raises an error' do
             put "/v2/apps/#{app_obj.guid}", MultiJson.dump({ docker_image: 'repo/great-image' })
@@ -1084,7 +1083,7 @@ module VCAP::CloudController
       end
 
       context 'when starting an app without a package' do
-        let(:app_obj) { App.make(instances: 1) }
+        let(:app_obj) { Process.make(instances: 1) }
 
         it 'raises an error' do
           put "/v2/apps/#{app_obj.guid}", MultiJson.dump({ state: 'STARTED' })
@@ -1096,7 +1095,7 @@ module VCAP::CloudController
       describe 'starting and stopping' do
         let(:parent_app) { app_obj.app }
         let(:app_obj) { AppFactory.make(instances: 1, state: state) }
-        let(:sibling) { App.make(instances: 1, state: state, app: parent_app, type: 'worker') }
+        let(:sibling) { Process.make(instances: 1, state: state, app: parent_app, type: 'worker') }
 
         context 'starting' do
           let(:state) { 'STOPPED' }
@@ -1227,7 +1226,7 @@ module VCAP::CloudController
         end
 
         it 'does not record when the destroy fails' do
-          allow_any_instance_of(App).to receive(:destroy).and_raise('Error saving')
+          allow_any_instance_of(Process).to receive(:destroy).and_raise('Error saving')
 
           delete_app
 
@@ -1672,7 +1671,7 @@ module VCAP::CloudController
     end
 
     describe 'uploading the droplet' do
-      let(:app_obj) { App.make }
+      let(:app_obj) { Process.make }
 
       let(:tmpdir) { Dir.mktmpdir }
       after { FileUtils.rm_rf(tmpdir) }
@@ -1754,7 +1753,7 @@ module VCAP::CloudController
           space: space,
         )
 
-        expect(Dea::Client).to receive(:update_uris).with(an_instance_of(VCAP::CloudController::App)) do |app|
+        expect(Dea::Client).to receive(:update_uris).with(an_instance_of(VCAP::CloudController::Process)) do |app|
           expect(app.uris).to include('app.jesse.cloud')
         end
 
@@ -1817,7 +1816,7 @@ module VCAP::CloudController
           r['metadata']['guid']
         }).to match_array([bar_route.guid])
 
-        expect(Dea::Client).to receive(:update_uris).with(an_instance_of(VCAP::CloudController::App)) do |app|
+        expect(Dea::Client).to receive(:update_uris).with(an_instance_of(VCAP::CloudController::Process)) do |app|
           expect(app.uris).to include('foo.jesse.cloud')
         end
 
@@ -1975,7 +1974,7 @@ module VCAP::CloudController
       end
 
       it 'returns duplicate app name message correctly' do
-        existing_app = App.make(app: AppModel.make(space: space))
+        existing_app = Process.make(app: AppModel.make(space: space))
         put "/v2/apps/#{app_obj.guid}", MultiJson.dump(name: existing_app.name)
 
         expect(last_response.status).to eq(400)
@@ -2091,8 +2090,8 @@ module VCAP::CloudController
     end
 
     describe 'enumerate' do
-      let!(:web_app) { App.make(type: 'web') }
-      let!(:other_app) { App.make(type: 'other') }
+      let!(:web_app) { Process.make(type: 'web') }
+      let!(:other_app) { Process.make(type: 'other') }
 
       before do
         set_current_user_as_admin

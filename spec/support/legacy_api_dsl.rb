@@ -44,7 +44,7 @@ module LegacyApiDsl
 
   def expected_attributes_for_model(model)
     return model.fields.keys if model.respond_to? :fields
-    "VCAP::CloudController::#{model.to_s.classify}".constantize.export_attrs
+    modulized_model_class(model).constantize.export_attrs
   end
 
   def parsed_response
@@ -89,7 +89,11 @@ module LegacyApiDsl
   private
 
   def model_has_updated_at?(model)
-    "VCAP::CloudController::#{model.to_s.classify}".constantize.columns.include?(:updated_at)
+    modulized_model_class(model).constantize.columns.include?(:updated_at)
+  end
+
+  def modulized_model_class(model)
+    model == :app ? 'VCAP::CloudController::Process' : "VCAP::CloudController::#{model.to_s.classify}"
   end
 
   def add_deprecation_warning
@@ -123,7 +127,6 @@ module LegacyApiDsl
         include_context 'response_fields' if options[:response_fields]
 
         standard_list_parameters controller, outer_model: outer_model, exclude_parameters: options.fetch(:exclude_parameters, []), &block
-
         example_request "List all #{title}#{outer_model_description}" do
           expect(status).to eq 200
           standard_list_response(parsed_response, model, expected_attributes: options[:export_attributes])

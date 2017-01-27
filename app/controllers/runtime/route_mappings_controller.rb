@@ -3,7 +3,7 @@ require 'actions/v2/route_mapping_create'
 module VCAP::CloudController
   class RouteMappingsController < RestController::ModelController
     define_attributes do
-      to_one :app, exclude_in: [:update], association_name: :process
+      to_one :app, exclude_in: [:update], association_name: :process, association_controller: :AppsController
       to_one :route, exclude_in: [:update]
       attribute :app_port, Integer, default: nil, exclude_in: [:update]
     end
@@ -26,7 +26,7 @@ module VCAP::CloudController
       logger.debug 'cc.create', model: self.class.model_class_name, attributes: redact_attributes(:create, request_attrs)
 
       route   = Route.where(guid: request_attrs['route_guid']).eager(:space).all.first
-      process = App.where(guid: request_attrs['app_guid']).eager(app: :space).all.first
+      process = Process.where(guid: request_attrs['app_guid']).eager(app: :space).all.first
 
       raise CloudController::Errors::ApiError.new_from_details('RouteNotFound', request_attrs['route_guid']) unless route
       raise CloudController::Errors::ApiError.new_from_details('AppNotFound', request_attrs['app_guid']) unless process
@@ -84,7 +84,7 @@ module VCAP::CloudController
 
     def get_app_port(app_guid, app_port)
       if app_port.blank?
-        app = App.find(guid: app_guid)
+        app = Process.find(guid: app_guid)
         if !app.nil?
           return app.ports[0] unless app.ports.blank?
         end

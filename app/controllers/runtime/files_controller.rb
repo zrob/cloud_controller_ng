@@ -4,7 +4,7 @@ require 'uri'
 module VCAP::CloudController
   class FilesController < RestController::ModelController
     path_base 'apps'
-    model_class_name :App
+    model_class_name :Process
 
     get "#{path_guid}/instances/:instance_id/files", :files
     get "#{path_guid}/instances/:instance_id/files/*", :files

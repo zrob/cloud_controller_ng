@@ -386,8 +386,8 @@ RSpec.describe 'Apps' do
       app_model.lifecycle_data.buildpack = buildpack.name
       app_model.lifecycle_data.stack     = stack.name
       app_model.lifecycle_data.save
-      app_model.add_process(VCAP::CloudController::App.make(instances: 1))
-      app_model.add_process(VCAP::CloudController::App.make(instances: 2))
+      app_model.add_process(VCAP::CloudController::Process.make(instances: 1))
+      app_model.add_process(VCAP::CloudController::Process.make(instances: 2))
 
       get "/v3/apps/#{app_model.guid}", nil, user_header
       expect(last_response.status).to eq(200)
@@ -532,7 +532,7 @@ RSpec.describe 'Apps' do
     let!(:app_model) { VCAP::CloudController::AppModel.make(name: 'app_name', space: space) }
     let!(:package) { VCAP::CloudController::PackageModel.make(app: app_model) }
     let!(:droplet) { VCAP::CloudController::DropletModel.make(package: package, app: app_model) }
-    let!(:process) { VCAP::CloudController::ProcessModel.make(app: app_model) }
+    let!(:process) { VCAP::CloudController::Process.make(app: app_model) }
 
     it 'deletes an App' do
       delete "/v3/apps/#{app_model.guid}", nil, user_header
@@ -963,7 +963,7 @@ RSpec.describe 'Apps' do
     end
 
     it 'creates audit.app.process.update events' do
-      process_to_update = VCAP::CloudController::ProcessModel.make(:process, app: app_model, type: 'web', command: 'original')
+      process_to_update = VCAP::CloudController::Process.make(:process, app: app_model, type: 'web', command: 'original')
 
       droplet = VCAP::CloudController::DropletModel.make(
         app:           app_model,
@@ -1002,7 +1002,7 @@ RSpec.describe 'Apps' do
     end
 
     it 'creates audit.app.process.delete events' do
-      process_to_delete = VCAP::CloudController::ProcessModel.make(app: app_model, type: 'bob')
+      process_to_delete = VCAP::CloudController::Process.make(app: app_model, type: 'bob')
 
       droplet = VCAP::CloudController::DropletModel.make(
         app:           app_model,

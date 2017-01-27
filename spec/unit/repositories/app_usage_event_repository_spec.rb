@@ -37,7 +37,7 @@ module VCAP::CloudController
         it 'will create an event with default previous attributes' do
           event = repository.create_from_app(app)
 
-          default_instances = App.db_schema[:instances][:default].to_i
+          default_instances = Process.db_schema[:instances][:default].to_i
           default_memory    = VCAP::CloudController::Config.config[:default_app_memory]
 
           expect(event.previous_state).to eq('STOPPED')
@@ -550,7 +550,7 @@ module VCAP::CloudController
             app.state = 'STARTED'
             repository.create_from_app(app)
 
-            started_app_count = App.where(state: 'STARTED').count
+            started_app_count = Process.where(state: 'STARTED').count
 
             expect(AppUsageEvent.count > 1).to be true
             expect {
@@ -688,14 +688,14 @@ module VCAP::CloudController
           old = Time.now.utc - 999.days
 
           3.times do
-            event            = repository.create_from_app(App.make)
+            event            = repository.create_from_app(Process.make)
             event.created_at = old
             event.save
           end
         end
 
         it 'will delete events created before the specified cutoff time' do
-          app = App.make
+          app = Process.make
           repository.create_from_app(app)
 
           expect {

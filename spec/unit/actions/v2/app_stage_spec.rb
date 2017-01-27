@@ -16,7 +16,7 @@ module VCAP::CloudController
         end
 
         it 'delegates to DropletCreate with a DropletCreateMessage based on the process' do
-          process = App.make(memory: 765, disk_quota: 1234)
+          process = Process.make(memory: 765, disk_quota: 1234)
           package = PackageModel.make(app: process.app, state: PackageModel::READY_STATE)
           process.reload
 

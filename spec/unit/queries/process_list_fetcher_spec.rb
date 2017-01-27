@@ -9,9 +9,9 @@ module VCAP::CloudController
     let(:filters) { {} }
 
     describe '#fetch_all' do
-      let!(:web) { App.make(type: 'web') }
-      let!(:web2) { App.make(type: 'web') }
-      let!(:worker) { App.make(type: 'worker') }
+      let!(:web) { Process.make(type: 'web') }
+      let!(:web2) { Process.make(type: 'web') }
+      let!(:worker) { Process.make(type: 'worker') }
 
       it 'returns a Sequel::Dataset' do
         results = fetcher.fetch_all
@@ -52,7 +52,7 @@ module VCAP::CloudController
         end
 
         context 'app guids' do
-          let!(:desired_process) { App.make(app: desired_app) }
+          let!(:desired_process) { Process.make(app: desired_app) }
           let(:desired_app) { AppModel.make }
           let(:filters) { { app_guids: [desired_app.guid] } }
 
@@ -76,13 +76,13 @@ module VCAP::CloudController
     describe '#fetch_for_spaces' do
       let(:app1) { AppModel.make }
       let(:space1) { app1.space }
-      let!(:process_in_space1) { App.make(app: app1, type: 'a') }
-      let!(:process2_in_space1) { App.make(app: app1, type: 'b') }
+      let!(:process_in_space1) { Process.make(app: app1, type: 'a') }
+      let!(:process2_in_space1) { Process.make(app: app1, type: 'b') }
       let(:app2) { AppModel.make }
       let(:space2) { app2.space }
-      let!(:process_in_space2) { App.make(app: app2) }
+      let!(:process_in_space2) { Process.make(app: app2) }
 
-      before { App.make }
+      before { Process.make }
 
       it 'returns a Sequel::Dataset' do
         results = fetcher.fetch_for_spaces(space_guids: [])
@@ -115,9 +115,9 @@ module VCAP::CloudController
       end
 
       it 'returns the processes for the app' do
-        process1 = App.make(:process, app: app)
-        process2 = App.make(:process, app: app)
-        App.make(:process)
+        process1 = Process.make(:process, app: app)
+        process2 = Process.make(:process, app: app)
+        Process.make(:process)
 
         _app, results = fetcher.fetch_for_app
         expect(results.all).to match_array([process1, process2])

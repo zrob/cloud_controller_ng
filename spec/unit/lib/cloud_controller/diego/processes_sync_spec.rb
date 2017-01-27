@@ -9,11 +9,11 @@ module VCAP::CloudController
       let(:bbs_apps_client) { instance_double(BbsAppsClient) }
 
       let(:missing_lrp) { ::Diego::Bbs::Models::DesiredLRP.new(process_guid: 'missing-lrp') }
-      let!(:missing_process) { ProcessModel.make(:diego_runnable) }
+      let!(:missing_process) { Process.make(:diego_runnable) }
 
-      let!(:missing_process_unstarted) { ProcessModel.make(:diego_runnable, state: 'STOPPED') }
-      let!(:missing_process_no_droplet) { ProcessModel.make(:process) }
-      let!(:missing_process_dea) { ProcessModel.make(:dea_runnable) }
+      let!(:missing_process_unstarted) { Process.make(:diego_runnable, state: 'STOPPED') }
+      let!(:missing_process_no_droplet) { Process.make(:process) }
+      let!(:missing_process_dea) { Process.make(:dea_runnable) }
 
       let(:good_lrp_scheduling_info) do
         ::Diego::Bbs::Models::DesiredLRPSchedulingInfo.new(
@@ -24,7 +24,7 @@ module VCAP::CloudController
         )
       end
       let(:good_lrp) { ::Diego::Bbs::Models::DesiredLRP.new(process_guid: 'good-lrp') }
-      let!(:good_process) { ProcessModel.make(:diego_runnable) }
+      let!(:good_process) { Process.make(:diego_runnable) }
 
       let(:stale_lrp_scheduling_info) do
         ::Diego::Bbs::Models::DesiredLRPSchedulingInfo.new(
@@ -42,7 +42,7 @@ module VCAP::CloudController
           routes:     ::Diego::Bbs::Models::ProtoRoutes.new(routes: [])
         )
       end
-      let!(:stale_process) { ProcessModel.make(:diego_runnable) }
+      let!(:stale_process) { Process.make(:diego_runnable) }
 
       let(:deleted_lrp_scheduling_info) do
         ::Diego::Bbs::Models::DesiredLRPSchedulingInfo.new(

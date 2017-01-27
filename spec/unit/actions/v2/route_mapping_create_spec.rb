@@ -56,7 +56,7 @@ module VCAP::CloudController
 
               it 'uses the default port' do
                 route_mapping = action.add(request_attrs)
-                expect(route_mapping.app_port).to eq(App::DEFAULT_HTTP_PORT)
+                expect(route_mapping.app_port).to eq(Process::DEFAULT_HTTP_PORT)
               end
             end
           end

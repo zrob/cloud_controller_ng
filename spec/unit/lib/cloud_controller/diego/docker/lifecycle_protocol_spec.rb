@@ -13,7 +13,7 @@ module VCAP
             let(:app) { AppModel.make }
             let(:package) { PackageModel.make(:docker, app: app) }
             let(:droplet) { DropletModel.make(:staged, package: package, app: app) }
-            let(:process) { App.make(app: app) }
+            let(:process) { Process.make(app: app) }
 
             before do
               app.update(droplet_guid: droplet.guid)
@@ -54,7 +54,7 @@ module VCAP
               end
 
               it 'does not set docker credentials if the web process has no docker credentials' do
-                App.make(app: droplet.app, type: 'web', docker_credentials_json: nil)
+                Process.make(app: droplet.app, type: 'web', docker_credentials_json: nil)
 
                 message = lifecycle_protocol.lifecycle_data(staging_details)
                 expect(message[:docker_login_server]).to be_nil
@@ -64,7 +64,7 @@ module VCAP
               end
 
               it 'sets docker credentials if the web process has docker credentials' do
-                App.make(
+                Process.make(
                   app: droplet.app,
                   type: 'web',
                   docker_credentials_json: {
@@ -87,7 +87,7 @@ module VCAP
           describe '#desired_app_message' do
             let(:app) { AppModel.make }
             let(:droplet) { DropletModel.make(:docker, state: DropletModel::STAGED_STATE, app: app, docker_receipt_image: 'the-image') }
-            let(:process) { App.make(app: app, diego: true, command: 'go go go', metadata: {}) }
+            let(:process) { Process.make(app: app, diego: true, command: 'go go go', metadata: {}) }
 
             before do
               app.update(droplet_guid: droplet.guid)
@@ -114,7 +114,7 @@ module VCAP
                 execution_metadata: 'foobar',
               })
             end
-            let(:process) { ProcessModel.make(app: app, diego: true, command: 'go go go', metadata: {}) }
+            let(:process) { Process.make(app: app, diego: true, command: 'go go go', metadata: {}) }
             let(:builder_opts) do
               {
                 ports: [1, 2, 3],

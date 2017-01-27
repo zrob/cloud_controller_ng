@@ -5,7 +5,7 @@ module VCAP::CloudController
     end
 
     path_base 'apps'
-    model_class_name :App
+    model_class_name :Process
 
     get "#{path_guid}/crashes", :crashes
     def crashes(guid)

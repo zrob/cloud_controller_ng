@@ -23,11 +23,11 @@ module VCAP::CloudController
     end
 
     def diego_apps(batch_size, last_id)
-      App.select_all(App.table_name).
+      Process.select_all(Process.table_name).
         diego.
         runnable.
-        where("#{App.table_name}.id > ?", last_id).
-        order("#{App.table_name}__id".to_sym).
+        where("#{Process.table_name}.id > ?", last_id).
+        order("#{Process.table_name}__id".to_sym).
         limit(batch_size).
         eager(:current_droplet, :space, :service_bindings, { routes: :domain }, { app: :buildpack_lifecycle_data }).
         all
@@ -35,39 +35,39 @@ module VCAP::CloudController
 
     def diego_apps_from_process_guids(process_guids)
       process_guids = Array(process_guids).to_set
-      App.select_all(App.table_name).
+      Process.select_all(Process.table_name).
         diego.
         runnable.
-        where("#{App.table_name}__guid".to_sym => process_guids.map { |pg| Diego::ProcessGuid.app_guid(pg) }).
-        order("#{App.table_name}__id".to_sym).
+        where("#{Process.table_name}__guid".to_sym => process_guids.map { |pg| Diego::ProcessGuid.app_guid(pg) }).
+        order("#{Process.table_name}__id".to_sym).
         eager(:current_droplet, :space, :service_bindings, { routes: :domain }, { app: :buildpack_lifecycle_data }).
         all.
         select { |app| process_guids.include?(Diego::ProcessGuid.from_process(app)) }
     end
 
     def diego_apps_cache_data(batch_size, last_id)
-      diego_apps = App.
+      diego_apps = Process.
                    diego.
                    runnable.
-                   where("#{App.table_name}.id > ?", last_id).
-                   order("#{App.table_name}__id".to_sym).
+                   where("#{Process.table_name}.id > ?", last_id).
+                   order("#{Process.table_name}__id".to_sym).
                    limit(batch_size)
 
       diego_apps = diego_apps.buildpack_type unless FeatureFlag.enabled?(:diego_docker)
 
       diego_apps.select_map([
-        "#{App.table_name}__id".to_sym,
-        "#{App.table_name}__guid".to_sym,
-        "#{App.table_name}__version".to_sym,
-        "#{App.table_name}__updated_at".to_sym
+        "#{Process.table_name}__id".to_sym,
+        "#{Process.table_name}__guid".to_sym,
+        "#{Process.table_name}__version".to_sym,
+        "#{Process.table_name}__updated_at".to_sym
       ])
     end
 
     def dea_apps(batch_size, last_id)
-      query = App.select_all(App.table_name).
+      query = Process.select_all(Process.table_name).
               dea.
-              where("#{App.table_name}.id > ?", last_id).
-              order("#{App.table_name}__id".to_sym).
+              where("#{Process.table_name}.id > ?", last_id).
+              order("#{Process.table_name}__id".to_sym).
               limit(batch_size)
 
       query.all
@@ -76,7 +76,7 @@ module VCAP::CloudController
     def dea_apps_hm9k
       # query 1
       # get all process information where the process is STARTED and running on the DEA
-      process_query = App.db["Select p.id, p.app_guid, p.instances, p.version, apps.droplet_guid from processes p
+      process_query = Process.db["Select p.id, p.app_guid, p.instances, p.version, apps.droplet_guid from processes p
                       inner join apps ON (apps.guid = p.app_guid AND p.state ='STARTED' AND p.diego IS FALSE)"]
       processes = process_query.all
 
@@ -84,7 +84,7 @@ module VCAP::CloudController
       # get all necessary droplet information. This includes:
       #    where the droplet's associated process is running on the DEA and the process is STARTED
       #    Finding only the latest droplet associated with the process
-      droplets_query = App.db["select d.id, d.guid, d.app_guid, d.created_at, d.package_guid, d.state from droplets d
+      droplets_query = Process.db["select d.id, d.guid, d.app_guid, d.created_at, d.package_guid, d.state from droplets d
                               join processes p ON (d.app_guid = p.app_guid AND p.state ='STARTED' AND p.diego IS FALSE)
                               inner join (select app_guid, max(created_at) as _max from droplets group by app_guid) as x
                               ON d.app_guid = x.app_guid and d.created_at=x._max"]
@@ -94,7 +94,7 @@ module VCAP::CloudController
       # get all necessary package information. This includes:
       #   where the package's associated process is running on the DEA and the process is STARTED
       #   finding only the latest package associated with the process
-      packages_query = App.db["select pkg.id, pkg.guid, pkg.app_guid, pkg.created_at, pkg.state from packages pkg
+      packages_query = Process.db["select pkg.id, pkg.guid, pkg.app_guid, pkg.created_at, pkg.state from packages pkg
                               join processes proc ON
                                 (pkg.app_guid = proc.app_guid AND proc.state ='STARTED' AND proc.diego IS FALSE)
                               inner join (select app_guid, max(created_at) as _max from packages group by app_guid) as x

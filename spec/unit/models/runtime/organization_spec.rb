@@ -26,7 +26,7 @@ module VCAP::CloudController
       end
 
       it 'has associated apps' do
-        app = App.make
+        app = Process.make
         organization = app.space.organization
         expect(organization.apps).to include(app.reload)
       end
@@ -34,8 +34,8 @@ module VCAP::CloudController
       it 'does not associate non-web v2 apps' do
         app_model = AppModel.make
         org = app_model.space.organization
-        app1 = App.make(type: 'web', app: app_model)
-        App.make(type: 'other', app: app_model)
+        app1 = Process.make(type: 'web', app: app_model)
+        Process.make(type: 'other', app: app_model)
         expect(org.apps).to match_array([app1])
       end
 

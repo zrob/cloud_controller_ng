@@ -6,6 +6,8 @@ require 'actions/v2/app_update'
 
 module VCAP::CloudController
   class AppsController < RestController::ModelController
+    model_class_name :Process
+
     def self.dependencies
       [:app_event_repository, :droplet_blobstore, :stagers, :upload_handler]
     end
@@ -47,7 +49,7 @@ module VCAP::CloudController
 
     def read_env(guid)
       FeatureFlag.raise_unless_enabled!(:env_var_visibility)
-      app = find_guid_and_validate_access(:read_env, guid, App)
+      app = find_guid_and_validate_access(:read_env, guid, Process)
       FeatureFlag.raise_unless_enabled!(:space_developer_env_var_visibility)
 
       vcap_application = VCAP::VarsBuilder.new(app).to_hash
@@ -275,7 +277,7 @@ module VCAP::CloudController
       logger.debug 'cc.association.add', guid: app_guid, association: 'routes', other_guid: route_guid
       @request_attrs = { 'route' => route_guid, verb: 'add', relation: 'routes', related_guid: route_guid }
 
-      app = find_guid(app_guid, App)
+      app = find_guid(app_guid, Process)
       validate_access(:read_related_object_for_update, app, request_attrs)
 
       before_update(app)
@@ -305,7 +307,7 @@ module VCAP::CloudController
       logger.debug 'cc.association.remove', guid: app_guid, association: 'routes', other_guid: route_guid
       @request_attrs = { 'route' => route_guid, verb: 'remove', relation: 'routes', related_guid: route_guid }
 
-      process = find_guid(app_guid, App)
+      process = find_guid(app_guid, Process)
       validate_access(:can_remove_related_object, process, request_attrs)
 
       before_update(process)
@@ -326,7 +328,7 @@ module VCAP::CloudController
       logger.debug 'cc.association.remove', guid: app_guid, association: 'service_bindings', other_guid: service_binding_guid
       @request_attrs = { 'service_binding' => service_binding_guid, verb: 'remove', relation: 'service_bindings', related_guid: service_binding_guid }
 
-      process = find_guid(app_guid, App)
+      process = find_guid(app_guid, Process)
       validate_access(:can_remove_related_object, process, request_attrs)
 
       before_update(process)
@@ -343,7 +345,7 @@ module VCAP::CloudController
 
     get '/v2/apps/:guid/permissions', :permissions
     def permissions(guid)
-      find_guid_and_validate_access(:read_permissions, guid, App)
+      find_guid_and_validate_access(:read_permissions, guid, Process)
 
       [HTTP::OK, {}, JSON.generate({
         read_sensitive_data: true,
@@ -351,7 +353,7 @@ module VCAP::CloudController
       })]
     rescue CloudController::Errors::ApiError => e
       if e.name == 'NotAuthorized'
-        app = find_guid(guid, App)
+        app = find_guid(guid, Process)
         membership = VCAP::CloudController::Membership.new(current_user)
 
         basic_access = [

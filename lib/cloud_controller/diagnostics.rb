@@ -59,7 +59,7 @@ module VCAP::CloudController
     end
 
     def output_file_name
-      Time.now.utc.strftime("diag-#{Process.pid}-%Y%m%d-%H:%M:%S.%L.json")
+      Time.now.utc.strftime("diag-#{::Process.pid}-%Y%m%d-%H:%M:%S.%L.json")
     end
   end
 end

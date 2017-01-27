@@ -9,7 +9,7 @@ module VCAP::CloudController
       to_one :domain
       to_one :space
       to_one :service_instance, exclude_in: [:create, :update]
-      to_many :apps, route_for: :get, exclude_in: [:create, :update]
+      to_many :apps, route_for: :get, exclude_in: [:create, :update], association_controller: :AppsController
       to_many :route_mappings, link_only: true, exclude_in: [:create, :update], route_for: [:get], association_controller: :RouteMappingsController
     end
 
@@ -228,7 +228,7 @@ module VCAP::CloudController
 
       before_update(route)
 
-      app = App.find(guid: request_attrs['app'])
+      app = Process.find(guid: request_attrs['app'])
       raise CloudController::Errors::ApiError.new_from_details('AppNotFound', app_guid) unless app
 
       begin
@@ -258,7 +258,7 @@ module VCAP::CloudController
 
       before_update(route)
 
-      process = App.find(guid: request_attrs['app'])
+      process = Process.find(guid: request_attrs['app'])
       raise CloudController::Errors::ApiError.new_from_details('AppNotFound', app_guid) unless process
 
       route_mapping = RouteMappingModel.find(app: process.app, route: route, process: process)

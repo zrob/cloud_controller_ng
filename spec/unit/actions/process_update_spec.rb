@@ -15,7 +15,7 @@ module VCAP::CloudController
     end
     let(:message) { ProcessUpdateMessage.new({ command: 'new', health_check: health_check, ports: [1234, 5678] }) }
     let!(:process) do
-      App.make(
+      Process.make(
         :process,
         command:              'initial command',
         health_check_type:    'port',

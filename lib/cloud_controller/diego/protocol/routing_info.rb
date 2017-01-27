@@ -46,7 +46,7 @@ module VCAP::CloudController
             elsif process.ports.present?
               route_app_port_map[route_map.route_guid].push(process.ports.first)
             else
-              route_app_port_map[route_map.route_guid].push(VCAP::CloudController::App::DEFAULT_HTTP_PORT)
+              route_app_port_map[route_map.route_guid].push(VCAP::CloudController::Process::DEFAULT_HTTP_PORT)
             end
           end
         end

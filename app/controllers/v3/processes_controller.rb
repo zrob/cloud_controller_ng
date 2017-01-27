@@ -52,7 +52,7 @@ class ProcessesController < ApplicationController
     message = ProcessUpdateMessage.create_from_http_request(unmunged_body)
     unprocessable!(message.errors.full_messages) unless message.valid?
 
-    process = ProcessModel.where(guid: guid).eager(:space, :organization).all.first
+    process = Process.where(guid: guid).eager(:space, :organization).all.first
     process_not_found! unless process && can_read?(process.space.guid, process.organization.guid)
     unauthorized! unless can_write?(process.space.guid)
 

@@ -11,12 +11,12 @@ module VCAP::CloudController
 
     describe '#delete' do
       context 'when the process exists' do
-        let!(:process) { App.make(app: app, type: 'potato') }
+        let!(:process) { Process.make(app: app, type: 'potato') }
 
         it 'deletes the process record' do
           expect {
             process_delete.delete(process)
-          }.to change { App.count }.by(-1)
+          }.to change { Process.count }.by(-1)
           expect(process.exists?).to be_falsey
         end
 
@@ -30,13 +30,13 @@ module VCAP::CloudController
       end
 
       context 'when deleting multiple' do
-        let!(:process1) { App.make(:process, app: app) }
-        let!(:process2) { App.make(:process, app: app) }
+        let!(:process1) { Process.make(:process, app: app) }
+        let!(:process2) { Process.make(:process, app: app) }
 
         it 'deletes the process record' do
           expect {
             process_delete.delete([process1, process2])
-          }.to change { App.count }.by(-2)
+          }.to change { Process.count }.by(-2)
           expect(process1.exists?).to be_falsey
           expect(process2.exists?).to be_falsey
         end

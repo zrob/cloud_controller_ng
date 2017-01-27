@@ -12,7 +12,7 @@ module VCAP::CloudController
     end
 
     path_base 'apps'
-    model_class_name :App
+    model_class_name :Process
 
     def check_authentication(op)
       auth                  = env['HTTP_AUTHORIZATION']

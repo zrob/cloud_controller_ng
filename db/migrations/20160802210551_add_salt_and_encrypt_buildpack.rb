@@ -21,9 +21,11 @@ Sequel.migration do
     end
 
     self[:apps].each do |row|
-      salt = VCAP::CloudController::Encryptor.generate_salt
-      encrypted = VCAP::CloudController::Encryptor.encrypt(row[:buildpack], salt)
-      self['UPDATE apps SET encrypted_buildpack = ?, buildpack_salt = ? WHERE id = ?', encrypted, salt, row[:id]].update
+      unless row[:salt]
+        salt = VCAP::CloudController::Encryptor.generate_salt
+        encrypted = VCAP::CloudController::Encryptor.encrypt(row[:buildpack], salt)
+        self['UPDATE apps SET encrypted_buildpack = ?, buildpack_salt = ? WHERE id = ?', encrypted, salt, row[:id]].update
+      end
     end
 
     alter_table :apps do

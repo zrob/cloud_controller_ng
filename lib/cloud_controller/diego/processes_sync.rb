@@ -69,17 +69,17 @@ module VCAP::CloudController
       end
 
       def processes(last_id)
-        processes = ProcessModel.
+        processes = Process.
                     diego.
                     runnable.
-                    where("#{ProcessModel.table_name}.id > ?", last_id).
-                    order("#{ProcessModel.table_name}__id".to_sym).
+                    where("#{Process.table_name}.id > ?", last_id).
+                    order("#{Process.table_name}__id".to_sym).
                     eager(:current_droplet, :space, :service_bindings, { routes: :domain }, { app: :buildpack_lifecycle_data }).
                     limit(BATCH_SIZE)
 
         processes = processes.buildpack_type unless FeatureFlag.enabled?(:diego_docker)
 
-        processes.select_all(ProcessModel.table_name)
+        processes.select_all(Process.table_name)
       end
 
       def bbs_apps_client

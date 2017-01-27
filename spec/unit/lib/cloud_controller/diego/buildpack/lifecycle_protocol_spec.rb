@@ -14,7 +14,7 @@ module VCAP
             let(:app) { AppModel.make }
             let(:package) { PackageModel.make(app_guid: app.guid) }
             let(:droplet) { DropletModel.make(:staged, package_guid: package.guid, app_guid: app.guid) }
-            let(:process) { App.make(app: app) }
+            let(:process) { Process.make(app: app) }
             let(:staging_details) do
               Diego::StagingDetails.new.tap do |details|
                 details.droplet   = droplet
@@ -151,7 +151,7 @@ module VCAP
                 sha256_checksum: 'droplet-sha256-checksum',
               )
             end
-            let(:process) { App.make(app: app, command: 'command from app', metadata: {}) }
+            let(:process) { Process.make(app: app, command: 'command from app', metadata: {}) }
             let(:staging_details) do
               Diego::StagingDetails.new.tap do |details|
                 details.droplet   = droplet
@@ -304,7 +304,7 @@ module VCAP
               DropletModel.make(state: DropletModel::STAGED_STATE)
             end
             let(:process) do
-              ProcessModel.make(
+              Process.make(
                 app:      app,
                 diego:    true,
                 command:  'go go go',

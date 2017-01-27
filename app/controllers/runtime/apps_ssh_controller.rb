@@ -18,7 +18,7 @@ module VCAP::CloudController
       @app_event_repository = dependencies.fetch(:app_event_repository)
     end
 
-    model_class_name :App
+    model_class_name :Process
 
     get '/internal/apps/:guid/ssh_access/:index', :ssh_access_with_index
     def ssh_access_with_index(guid, index)
@@ -36,7 +36,7 @@ module VCAP::CloudController
       response_body = { 'process_guid' => VCAP::CloudController::Diego::ProcessGuid.from_process(app) }
       [HTTP::OK, MultiJson.dump(response_body)]
     rescue => e
-      app = App.find(guid: guid)
+      app = Process.find(guid: guid)
       record_ssh_unauthorized_event(app, index) unless app.nil?
       raise e
     end
