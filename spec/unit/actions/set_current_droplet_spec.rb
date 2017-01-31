@@ -3,11 +3,12 @@ require 'actions/app_update'
 
 module VCAP::CloudController
   RSpec.describe SetCurrentDroplet do
+    subject(:set_current_droplet) { SetCurrentDroplet.new(user_audit_info) }
+
     let(:app_model) { AppModel.make }
     let(:user) { double(:user, guid: '1337') }
     let(:user_email) { 'cool_dude@hoopy_frood.com' }
     let(:user_audit_info) { UserAuditInfo.new(user_guid: user.guid, user_email: user_email) }
-    let(:set_current_droplet) { SetCurrentDroplet.new(user_audit_info) }
     let(:current_process_types) { double(:current_process_types) }
 
     describe '.update_to' do
@@ -31,8 +32,7 @@ module VCAP::CloudController
         expect_any_instance_of(Repositories::AppEventRepository).to receive(:record_app_map_droplet).with(
           app_model,
           app_model.space,
-          user.guid,
-          user_email,
+          user_audit_info,
           { droplet_guid: droplet.guid }
         )
 

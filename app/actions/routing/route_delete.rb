@@ -31,8 +31,7 @@ module VCAP::CloudController
         app_event_repository.record_unmap_route(
           route_mapping.app,
           route,
-          user_audit_info.user_guid,
-          user_audit_info.user_email,
+          user_audit_info,
           route_mapping: route_mapping
         )
       end

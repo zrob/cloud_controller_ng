@@ -20,8 +20,7 @@ module VCAP::CloudController
         Repositories::AppEventRepository.new.record_app_map_droplet(
           app,
           app.space,
-          @user_audit_info.user_guid,
-          @user_audit_info.user_email,
+          @user_audit_info,
           assign_droplet
         )
 

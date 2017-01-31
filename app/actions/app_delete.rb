@@ -41,8 +41,7 @@ module VCAP::CloudController
       Repositories::AppEventRepository.new.record_app_delete_request(
         app,
         app.space,
-        @user_audit_info.user_guid,
-        @user_audit_info.user_email,
+        @user_audit_info,
       )
     end
 
@@ -51,7 +50,7 @@ module VCAP::CloudController
       TaskDelete.new(@user_audit_info).delete(app.tasks)
       DropletDelete.new(@user_audit_info, stagers).delete(app.droplets)
       ProcessDelete.new(@user_audit_info).delete(app.processes)
-      RouteMappingDelete.new(@user_audit_info.user_guid, @user_audit_info.user_email).delete(route_mappings_to_delete(app))
+      RouteMappingDelete.new(@user_audit_info).delete(route_mappings_to_delete(app))
       errors = ServiceBindingDelete.new(@user_audit_info).delete(app.service_bindings)
       raise errors.first unless errors.empty?
       delete_buildpack_cache(app)

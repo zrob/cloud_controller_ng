@@ -231,7 +231,7 @@ module VCAP::CloudController
       raise CloudController::Errors::ApiError.new_from_details('AppNotFound', app_guid) unless app
 
       begin
-        V2::RouteMappingCreate.new(SecurityContext.current_user, SecurityContext.current_user_email, route, app).add(request_attrs)
+        V2::RouteMappingCreate.new(UserAuditInfo.from_context(SecurityContext), route, app).add(request_attrs)
       rescue RouteMappingCreate::DuplicateRouteMapping
         # the route is already mapped, consider the request successful
       rescue V2::RouteMappingCreate::TcpRoutingDisabledError
@@ -261,7 +261,7 @@ module VCAP::CloudController
       raise CloudController::Errors::ApiError.new_from_details('AppNotFound', app_guid) unless process
 
       route_mapping = RouteMappingModel.find(app: process.app, route: route, process: process)
-      RouteMappingDelete.new(SecurityContext.current_user, SecurityContext.current_user_email).delete(route_mapping)
+      RouteMappingDelete.new(UserAuditInfo.from_context(SecurityContext)).delete(route_mapping)
 
       after_update(route)
 
