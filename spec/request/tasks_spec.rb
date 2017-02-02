@@ -10,10 +10,12 @@ RSpec.describe 'Tasks' do
       state:    VCAP::CloudController::DropletModel::STAGED_STATE,
     )
   end
-  let(:developer_headers) { headers_for(user, email: 'user@email.example.com') }
+  let(:developer_headers) { headers_for(user, email: user_email, user_name: user_name) }
   let(:scheme) { TestConfig.config[:external_protocol] }
   let(:host) { TestConfig.config[:external_domain] }
   let(:link_prefix) { "#{scheme}://#{host}" }
+  let(:user_email) { 'user@email.example.com' }
+  let(:user_name) { 'Task McNamara' }
 
   before do
     stub_request(:post, 'http://nsync.service.cf.internal:8787/v1/tasks').to_return(status: 202)
@@ -260,7 +262,8 @@ RSpec.describe 'Tasks' do
         type:              'audit.app.task.cancel',
         actor:             user.guid,
         actor_type:        'user',
-        actor_name:        'user@email.example.com',
+        actor_name:        user_email,
+        actor_username:    user_name,
         actee:             app_model.guid,
         actee_type:        'app',
         actee_name:        app_model.name,
@@ -517,7 +520,8 @@ RSpec.describe 'Tasks' do
         type:              'audit.app.task.create',
         actor:             user.guid,
         actor_type:        'user',
-        actor_name:        'user@email.example.com',
+        actor_name:        user_email,
+        actor_username:    user_name,
         actee:             app_model.guid,
         actee_type:        'app',
         actee_name:        app_model.name,

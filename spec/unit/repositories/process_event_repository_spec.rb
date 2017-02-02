@@ -8,7 +8,8 @@ module VCAP::CloudController
       let(:process) { App.make(app: app, type: 'potato') }
       let(:user_guid) { 'user_guid' }
       let(:email) { 'user-email' }
-      let(:user_audit_info) { UserAuditInfo.new(user_guid: user_guid, user_email: email) }
+      let(:user_name) { 'user-name' }
+      let(:user_audit_info) { UserAuditInfo.new(user_guid: user_guid, user_name: user_name, user_email: email) }
 
       describe '.record_create' do
         it 'creates a new audit.app.start event' do
@@ -19,6 +20,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user_guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee).to eq(app.guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq('zach-loves-kittens')
@@ -40,6 +42,7 @@ module VCAP::CloudController
           expect(event.type).to eq('audit.app.process.delete')
           expect(event.actor).to eq(user_guid)
           expect(event.actor_type).to eq('user')
+          expect(event.actor_username).to eq(user_name)
           expect(event.actor_name).to eq(email)
           expect(event.actee).to eq(app.guid)
           expect(event.actee_type).to eq('app')
@@ -64,6 +67,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user_guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee).to eq(app.guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq('zach-loves-kittens')
@@ -91,6 +95,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user_guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee).to eq(app.guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq('zach-loves-kittens')
@@ -128,6 +133,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user_guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee).to eq(app.guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq('zach-loves-kittens')
@@ -161,6 +167,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(process.guid)
           expect(event.actor_type).to eq('process')
           expect(event.actor_name).to eq('potato')
+          expect(event.actor_username).to eq('')
           expect(event.actee).to eq(app.guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq('zach-loves-kittens')

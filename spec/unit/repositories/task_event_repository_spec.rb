@@ -7,7 +7,8 @@ module VCAP
         let(:task) { TaskModel.make }
         let(:user_guid) { 'user-guid' }
         let(:user_email) { 'user-email' }
-        let(:user_audit_info) { UserAuditInfo.new(user_guid: user_guid, user_email: user_email) }
+        let(:user_name) { 'user-name' }
+        let(:user_audit_info) { UserAuditInfo.new(user_guid: user_guid, user_name: user_name, user_email: user_email) }
 
         subject(:task_event_repository) { TaskEventRepository.new }
 
@@ -19,6 +20,7 @@ module VCAP
             expect(event.actor).to eq(user_guid)
             expect(event.actor_type).to eq('user')
             expect(event.actor_name).to eq(user_email)
+            expect(event.actor_username).to eq(user_name)
             expect(event.actee).to eq(task.app.guid)
             expect(event.actee_type).to eq('app')
             expect(event.actee_name).to eq(task.app.name)
@@ -43,6 +45,7 @@ module VCAP
             expect(event.actor).to eq(user_guid)
             expect(event.actor_type).to eq('user')
             expect(event.actor_name).to eq(user_email)
+            expect(event.actor_username).to eq(user_name)
             expect(event.actee).to eq(task.app.guid)
             expect(event.actee_type).to eq('app')
             expect(event.actee_name).to eq(task.app.name)

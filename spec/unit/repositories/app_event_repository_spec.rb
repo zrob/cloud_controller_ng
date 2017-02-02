@@ -4,9 +4,10 @@ module VCAP::CloudController
   module Repositories
     RSpec.describe AppEventRepository do
       subject(:app_event_repository) { AppEventRepository.new }
-      let(:user_audit_info) { UserAuditInfo.new(user_email: user_email, user_guid: user_guid) }
+      let(:user_audit_info) { UserAuditInfo.new(user_email: user_email, user_name: user_name, user_guid: user_guid) }
       let(:user_guid) { 'user guid' }
       let(:user_email) { 'user email' }
+      let(:user_name) { 'user name' }
 
       describe '#record_app_update' do
         let(:attrs) do
@@ -50,6 +51,7 @@ module VCAP::CloudController
           expect(event.actor).to eq user_guid
           expect(event.actor_type).to eq 'user'
           expect(event.actor_name).to eq user_email
+          expect(event.actor_username).to eq user_name
 
           request = event.metadata.fetch('request')
           expect(request).to eq(expected_request_field)
@@ -85,6 +87,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user_guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           request = event.metadata.fetch('request')
           expect(request).to eq(
             'name' => 'new',
@@ -113,10 +116,12 @@ module VCAP::CloudController
           expect(event.actor).to eq(user_guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.type).to eq('audit.app.delete-request')
           expect(event.actee).to eq(app.guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq(app.name)
+          expect(event.actor_username).to eq user_name
           expect(event.metadata['request']['recursive']).to eq(false)
         end
 
@@ -143,6 +148,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user_guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.type).to eq('audit.app.droplet.mapped')
           expect(event.actee).to eq(app.guid)
           expect(event.actee_type).to eq('app')
@@ -198,6 +204,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user_guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee_type).to eq('app')
           expect(event.actee).to eq(app.guid)
           expect(event.metadata[:route_guid]).to eq(route.guid)
@@ -242,6 +249,7 @@ module VCAP::CloudController
           expect(event.actor_type).to eq('user')
           expect(event.actee_type).to eq('app')
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee).to eq(app.guid)
           expect(event.metadata[:route_guid]).to eq(route.guid)
         end
@@ -284,6 +292,7 @@ module VCAP::CloudController
           expect(event.actor_type).to eq('user')
           expect(event.actee).to eq(app.guid)
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee_type).to eq('app')
         end
       end
@@ -300,6 +309,7 @@ module VCAP::CloudController
           expect(event.actor_type).to eq('user')
           expect(event.actee).to eq(src_app.guid)
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee_type).to eq('app')
           expect(event.metadata[:destination_guid]).to eq(dest_app.guid)
         end
@@ -317,6 +327,7 @@ module VCAP::CloudController
           expect(event.actor_type).to eq('user')
           expect(event.actee).to eq(dest_app.guid)
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee_type).to eq('app')
           expect(event.metadata[:source_guid]).to eq(src_app.guid)
         end
@@ -334,6 +345,7 @@ module VCAP::CloudController
           expect(event.actor_type).to eq('user')
           expect(event.actee).to eq(app.guid)
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee_type).to eq('app')
           expect(event.metadata).to eq({ index: instance_index })
         end
@@ -351,6 +363,7 @@ module VCAP::CloudController
           expect(event.actor_type).to eq('user')
           expect(event.actee).to eq(app.guid)
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee_type).to eq('app')
           expect(event.metadata).to eq({ index: instance_index })
         end
@@ -459,6 +472,7 @@ module VCAP::CloudController
             expect(event.actor).to eq(user_guid)
             expect(event.actor_type).to eq('user')
             expect(event.actor_name).to eq(user_email)
+            expect(event.actor_username).to eq(user_name)
 
             expect(event.actee).to eq(app.guid)
             expect(event.actee_type).to eq('app')
@@ -479,6 +493,7 @@ module VCAP::CloudController
             expect(event.actor).to eq(user_guid)
             expect(event.actor_type).to eq('user')
             expect(event.actor_name).to eq(user_email)
+            expect(event.actor_username).to eq(user_name)
 
             expect(event.actee).to eq(app.guid)
             expect(event.actee_type).to eq('app')

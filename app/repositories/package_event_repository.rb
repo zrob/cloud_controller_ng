@@ -55,16 +55,17 @@ module VCAP::CloudController
       def self.create_event(package, type, user_audit_info, metadata)
         app = package.app
         Event.create(
-          space:      package.space,
-          type:       type,
-          timestamp:  Sequel::CURRENT_TIMESTAMP,
-          actee:      app.guid,
-          actee_type: 'app',
-          actee_name: app.name,
-          actor:      user_audit_info.user_guid,
-          actor_type: 'user',
-          actor_name: user_audit_info.user_email,
-          metadata:   metadata
+          space:          package.space,
+          type:           type,
+          timestamp:      Sequel::CURRENT_TIMESTAMP,
+          actee:          app.guid,
+          actee_type:     'app',
+          actee_name:     app.name,
+          actor:          user_audit_info.user_guid,
+          actor_type:     'user',
+          actor_name:     user_audit_info.user_email,
+          actor_username: user_audit_info.user_name,
+          metadata:       metadata
         )
       end
     end

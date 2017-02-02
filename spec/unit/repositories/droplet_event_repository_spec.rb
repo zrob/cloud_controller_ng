@@ -9,7 +9,8 @@ module VCAP::CloudController
       let(:package) { PackageModel.make(app_guid: app.guid) }
       let(:droplet) { DropletModel.make(app_guid: app.guid, package: package) }
       let(:email) { 'user-email' }
-      let(:user_audit_info) { UserAuditInfo.new(user_email: email, user_guid: user.guid) }
+      let(:user_name) { 'user-name' }
+      let(:user_audit_info) { UserAuditInfo.new(user_email: email, user_name: user_name, user_guid: user.guid) }
 
       describe '#record_create_by_staging' do
         let(:request_attrs) do
@@ -31,6 +32,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user.guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee).to eq(droplet.app_guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq('popsicle')
@@ -66,6 +68,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user.guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee).to eq(droplet.app_guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq('popsicle')
@@ -86,6 +89,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user.guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee).to eq(droplet.app_guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq('popsicle')
@@ -103,6 +107,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user.guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.actee).to eq(droplet.app_guid)
           expect(event.actee_type).to eq('app')
           expect(event.actee_name).to eq('popsicle')

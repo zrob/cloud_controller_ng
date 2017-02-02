@@ -18,6 +18,7 @@ module VCAP
             actor:             user_audit_info.user_guid,
             actor_type:        'user',
             actor_name:        user_audit_info.user_email,
+            actor_username:    user_audit_info.user_name,
             actee:             task.app.guid,
             actee_type:        'app',
             actee_name:        task.app.name,

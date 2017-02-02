@@ -24,17 +24,18 @@ module VCAP::CloudController
       def record_space_role_event(type, space, assignee, actor_audit_info, request_attrs)
         username = assignee.username ? assignee.username : ''
         Event.create(
-          type:       type,
-          space:      space,
-          actee:      assignee.guid,
-          actee_type: 'user',
-          actee_name: username,
-          actor:      actor_audit_info.user_guid,
-          actor_type: 'user',
-          actor_name: actor_audit_info.user_email,
-          timestamp:  Sequel::CURRENT_TIMESTAMP,
-          metadata:   {
-              request: request_attrs
+          type:           type,
+          space:          space,
+          actee:          assignee.guid,
+          actee_type:     'user',
+          actee_name:     username,
+          actor:          actor_audit_info.user_guid,
+          actor_type:     'user',
+          actor_name:     actor_audit_info.user_email,
+          actor_username: actor_audit_info.user_name,
+          timestamp:      Sequel::CURRENT_TIMESTAMP,
+          metadata:       {
+            request: request_attrs
           }
         )
       end
@@ -42,17 +43,18 @@ module VCAP::CloudController
       def record_organization_role_event(type, organization, assignee, actor_audit_info, request_attrs)
         username = assignee.username ? assignee.username : ''
         Event.create(
-          type:       type,
-          organization_guid:      organization.guid,
-          actee:      assignee.guid,
-          actee_type: 'user',
-          actee_name: username,
-          actor:      actor_audit_info.user_guid,
-          actor_type: 'user',
-          actor_name: actor_audit_info.user_email,
-          timestamp:  Sequel::CURRENT_TIMESTAMP,
-          metadata:   {
-              request: request_attrs
+          type:              type,
+          organization_guid: organization.guid,
+          actee:             assignee.guid,
+          actee_type:        'user',
+          actee_name:        username,
+          actor:             actor_audit_info.user_guid,
+          actor_type:        'user',
+          actor_name:        actor_audit_info.user_email,
+          actor_username:    actor_audit_info.user_name,
+          timestamp:         Sequel::CURRENT_TIMESTAMP,
+          metadata:          {
+            request: request_attrs
           }
         )
       end

@@ -221,17 +221,19 @@ module VCAP::CloudController
 
       def broker_actor(broker)
         {
-          actor_type: 'service_broker',
-          actor:      broker.guid,
-          actor_name: broker.name
+          actor_type:     'service_broker',
+          actor:          broker.guid,
+          actor_name:     broker.name,
+          actor_username: '',
         }
       end
 
       def user_actor
         {
-          actor_type: 'user',
-          actor:      @user_audit_info.user_guid,
-          actor_name: @user_audit_info.user_email
+          actor_type:     'user',
+          actor:          @user_audit_info.user_guid,
+          actor_name:     @user_audit_info.user_email,
+          actor_username: @user_audit_info.user_name
         }
       end
 

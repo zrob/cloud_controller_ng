@@ -3,16 +3,17 @@ module VCAP::CloudController
     class SpaceEventRepository
       def record_space_create(space, user_audit_info, request_attrs)
         Event.create(
-          space:      space,
-          type:       'audit.space.create',
-          actee:      space.guid,
-          actee_type: 'space',
-          actee_name: space.name,
-          actor:      user_audit_info.user_guid,
-          actor_type: 'user',
-          actor_name: user_audit_info.user_email,
-          timestamp:  Sequel::CURRENT_TIMESTAMP,
-          metadata:   {
+          space:          space,
+          type:           'audit.space.create',
+          actee:          space.guid,
+          actee_type:     'space',
+          actee_name:     space.name,
+          actor:          user_audit_info.user_guid,
+          actor_type:     'user',
+          actor_name:     user_audit_info.user_email,
+          actor_username: user_audit_info.user_name,
+          timestamp:      Sequel::CURRENT_TIMESTAMP,
+          metadata:       {
             request: request_attrs
           }
         )
@@ -20,16 +21,17 @@ module VCAP::CloudController
 
       def record_space_update(space, user_audit_info, request_attrs)
         Event.create(
-          space:      space,
-          type:       'audit.space.update',
-          actee:      space.guid,
-          actee_type: 'space',
-          actee_name: space.name,
-          actor:      user_audit_info.user_guid,
-          actor_type: 'user',
-          actor_name: user_audit_info.user_email,
-          timestamp:  Sequel::CURRENT_TIMESTAMP,
-          metadata:   {
+          space:          space,
+          type:           'audit.space.update',
+          actee:          space.guid,
+          actee_type:     'space',
+          actee_name:     space.name,
+          actor:          user_audit_info.user_guid,
+          actor_type:     'user',
+          actor_name:     user_audit_info.user_email,
+          actor_username: user_audit_info.user_name,
+          timestamp:      Sequel::CURRENT_TIMESTAMP,
+          metadata:       {
             request: request_attrs
           }
         )
@@ -44,6 +46,7 @@ module VCAP::CloudController
           actor:             user_audit_info.user_guid,
           actor_type:        'user',
           actor_name:        user_audit_info.user_email,
+          actor_username:    user_audit_info.user_name,
           timestamp:         Sequel::CURRENT_TIMESTAMP,
           space_guid:        space.guid,
           organization_guid: space.organization.guid,

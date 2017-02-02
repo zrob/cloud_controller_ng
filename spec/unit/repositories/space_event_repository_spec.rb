@@ -7,7 +7,8 @@ module VCAP::CloudController
       let(:user) { User.make }
       let(:space) { Space.make }
       let(:user_email) { 'email address' }
-      let(:user_audit_info) { UserAuditInfo.new(user_email: user_email, user_guid: user.guid) }
+      let(:user_name) { 'user name' }
+      let(:user_audit_info) { UserAuditInfo.new(user_email: user_email, user_guid: user.guid, user_name: user_name) }
 
       subject(:space_event_repository) { SpaceEventRepository.new }
 
@@ -23,6 +24,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user.guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.metadata).to eq({ 'request' => request_attrs })
         end
       end
@@ -39,6 +41,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user.guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.metadata).to eq({ 'request' => request_attrs })
         end
       end
@@ -61,6 +64,7 @@ module VCAP::CloudController
           expect(event.actor).to eq(user.guid)
           expect(event.actor_type).to eq('user')
           expect(event.actor_name).to eq(user_email)
+          expect(event.actor_username).to eq(user_name)
           expect(event.metadata).to eq({ 'request' => { 'recursive' => true } })
         end
       end

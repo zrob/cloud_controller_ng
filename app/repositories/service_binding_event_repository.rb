@@ -30,6 +30,7 @@ module VCAP::CloudController
             actor:             user_audit_info.user_guid,
             actor_type:        'user',
             actor_name:        user_audit_info.user_email,
+            actor_username:    user_audit_info.user_name,
             actee:             service_binding.guid,
             actee_type:        'service_binding',
             actee_name:        '',

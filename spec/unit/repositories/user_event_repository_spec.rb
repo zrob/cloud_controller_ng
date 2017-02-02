@@ -9,8 +9,9 @@ module VCAP::CloudController
       let(:assigner) { User.make }
       let(:assignee) { User.make(username: 'frank') }
       let(:assigner_email) { 'foo@bar.com' }
+      let(:assigner_username) { 'Mr.Foo' }
       let(:request_attrs) { { 'some_key' => 'some_val' } }
-      let(:assigner_audit_info) { UserAuditInfo.new(user_email: assigner_email, user_guid: assigner.guid) }
+      let(:assigner_audit_info) { UserAuditInfo.new(user_email: assigner_email, user_name: assigner_username, user_guid: assigner.guid) }
 
       describe 'space role events' do
         let(:roles) { [:manager, :developer, :auditor] }
@@ -28,6 +29,7 @@ module VCAP::CloudController
               expect(event.actor).to eq(assigner.guid)
               expect(event.actor_type).to eq('user')
               expect(event.actor_name).to eq(assigner_email)
+              expect(event.actor_username).to eq(assigner_username)
               expect(event.metadata).to eq({ 'request' => request_attrs })
             end
           end
@@ -46,6 +48,7 @@ module VCAP::CloudController
               expect(event.actor).to eq(assigner.guid)
               expect(event.actor_type).to eq('user')
               expect(event.actor_name).to eq(assigner_email)
+              expect(event.actor_username).to eq(assigner_username)
               expect(event.metadata).to eq({ 'request' => request_attrs })
             end
           end
