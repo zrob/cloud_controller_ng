@@ -51,11 +51,33 @@ module VCAP::CloudController
         context 'when org names are provided' do
           let(:message) { OrgsListMessage.new names: ['Marmot', 'Capybara', 'Groundhog'] }
 
-          it 'returns the correct set of tasks' do
+          it 'returns the correct set of orgs' do
             results = fetcher.fetch_all(message: message).all
             expect(results).to match_array([org1, org4, org5])
           end
         end
+      end
+    end
+
+    describe '#fetch_for_isolation_segment' do
+      let(:isolation_segment) {IsolationSegmentModel.make}
+      let(:assigner) {IsolationSegmentAssign.new}
+      let(:message) { OrgsListMessage.new isolation_segment_guid: isolation_segment.guid }
+
+
+      before do
+        assigner.assign(isolation_segment, [org1, org2, org5])
+      end
+
+      it 'returns a Sequel::Dataset and the isolation segments' do
+        returned_isolation_segment, results = fetcher.fetch_for_isolation_segment(message: message)
+        expect(returned_isolation_segment.guid).to eq(isolation_segment.guid)
+        expect(results).to be_a(Sequel::Dataset)
+      end
+
+      it 'fetches the orgs associated with the iso seg' do
+        _, results = fetcher.fetch_for_isolation_segment(message: message)
+        expect(results.all).to match_array([org1, org2, org5])
       end
     end
   end
