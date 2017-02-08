@@ -146,6 +146,7 @@ module VCAP::CloudController
             {
               '0' => {
                 state: 'RUNNING',
+                isolation_segment: 'isolation-segment-name',
                 stats: {
                   name: 'foo',
                   uris: 'some-uris',
@@ -165,6 +166,29 @@ module VCAP::CloudController
                 }
               }
             }
+          end
+
+          describe 'isolation segments' do
+            context 'when the app is running in an isolation segment' do
+              it 'should include the isolation segment name for the app' do
+                set_current_user(@developer)
+
+                @app.state = 'STARTED'
+                @app.instances = 1
+                @app.save
+
+                @app.refresh
+
+                get "/v2/apps/#{@app.guid}/stats"
+
+                expect(last_response.status).to eq(200)
+                expect(MultiJson.load(last_response.body)['0']['isolation_segment']).to eq('isolation-segment-name')
+              end
+            end
+
+            context 'when the app is not running in an isolation segment' do
+
+            end
           end
 
           it 'should return the stats without the net_info field' do

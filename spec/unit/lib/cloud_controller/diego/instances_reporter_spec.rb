@@ -480,6 +480,7 @@ module VCAP::CloudController
           {
             0 => {
               state:   'RUNNING',
+              isolation_segment: 'isolation-segment-name',
               stats:   {
                 name:       process.name,
                 uris:       process.uris,
