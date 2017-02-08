@@ -132,6 +132,8 @@ module VCAP::CloudController
         Locking.find_or_create(name: 'buildpacks')
         Locking.find_or_create(name: 'clock')
         Locking.find_or_create(name: 'diego-sync')
+        Locking.find_or_create(name: 'clock')
+        LastSuccessfulJob.find_or_create(name: 'sync-queue')
       end
 
       def create_seed_environment_variable_groups
