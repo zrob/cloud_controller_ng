@@ -16,7 +16,7 @@ module VCAP::CloudController
             Locking[name: 'diego-sync'].lock!
 
             VCAP::CloudController::Diego::ProcessesSync.new(config).sync if config.fetch(:diego, {}).fetch(:temporary_local_apps, false)
-            VCAP::CloudController::Diego::TasksSync.new(config).sync if config.fetch(:diego, {}).fetch(:temporary_local_tasks, false)
+            VCAP::CloudController::Diego::TasksSync.new.sync if config.fetch(:diego, {}).fetch(:temporary_local_tasks, false)
           end
         end
       end

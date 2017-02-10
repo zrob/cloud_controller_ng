@@ -130,7 +130,6 @@ module VCAP::CloudController
 
       def create_seed_lockings
         Locking.find_or_create(name: 'buildpacks')
-        Locking.find_or_create(name: 'clock')
         Locking.find_or_create(name: 'diego-sync')
       end
 

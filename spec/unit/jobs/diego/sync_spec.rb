@@ -4,7 +4,7 @@ module VCAP::CloudController
   module Jobs::Diego
     RSpec.describe Sync do
       let(:processes_sync) { instance_double(Diego::ProcessesSync) }
-      let(:tasks_sync) { instance_double(Diego::ProcessesSync) }
+      let(:tasks_sync) { instance_double(Diego::TasksSync) }
       subject(:job) { Sync.new }
 
       describe '#perform' do
@@ -20,7 +20,7 @@ module VCAP::CloudController
         before do
           allow(CloudController::DependencyLocator.instance).to receive(:config).and_return(config)
           allow(Diego::ProcessesSync).to receive(:new).with(config).and_return(processes_sync)
-          allow(Diego::TasksSync).to receive(:new).with(config).and_return(tasks_sync)
+          allow(Diego::TasksSync).to receive(:new).and_return(tasks_sync)
 
           allow(processes_sync).to receive(:sync)
           allow(tasks_sync).to receive(:sync)

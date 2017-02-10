@@ -8,8 +8,7 @@ module VCAP::CloudController
       class BBSFetchError < Error
       end
 
-      def initialize(config)
-        @config = config
+      def initialize
         @workpool = WorkPool.new(50)
       end
 

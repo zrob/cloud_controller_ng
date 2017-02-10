@@ -1,0 +1,10 @@
+check process diego_sync
+  with pidfile /var/vcap/sys/run/diego_sync/diego_sync.pid
+  start program "/var/vcap/jobs/diego_sync/bin/diego_sync_ctl start"
+    as uid vcap and gid vcap
+  stop program "/var/vcap/jobs/diego_sync/bin/diego_sync_ctl stop"
+    as uid vcap and gid vcap
+  group vcap
+  if totalmem > <%= p("cc.thresholds.api.alert_if_above_mb") %> Mb for 3 cycles then alert
+  if totalmem > <%= p("cc.thresholds.api.restart_if_consistently_above_mb") %> Mb for 15 cycles then restart
+  if totalmem > <%= p("cc.thresholds.api.restart_if_above_mb") %> Mb for 3 cycles then restart
