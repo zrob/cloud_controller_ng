@@ -637,6 +637,38 @@ RSpec.describe IsolationSegmentsController, type: :controller do
             expect(response.status).to eq 422
           end
         end
+
+        context 'when the segment is in use' do
+          before do
+            assigner.assign(isolation_segment_model, [org1])
+          end
+
+          context 'as the default for an organization' do
+            before do
+              org1.default_isolation_segment_model=(isolation_segment_model)
+            end
+
+            it 'returns a 422 and does not change the name' do
+              put :update, guid: isolation_segment_model.guid, body: req_body
+
+              expect(response.status).to eq 422
+            end
+          end
+
+          context 'via assignment to a space' do
+            let(:space) { VCAP::CloudController::Space.make(organization: org1 ) }
+
+            before do
+              space.isolation_segment_model=(isolation_segment_model)
+            end
+
+            it 'returns a 422 and does not change the name' do
+              put :update, guid: isolation_segment_model.guid, body: req_body
+
+              expect(response.status).to eq 422
+            end
+          end
+        end
       end
 
       context 'when the isolation segment does not exist' do
