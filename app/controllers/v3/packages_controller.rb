@@ -36,28 +36,30 @@ class PackagesController < ApplicationController
   def upload
     FeatureFlag.raise_unless_enabled!(:app_bits_upload)
 
-    message = PackageUploadMessage.create_from_params(params[:body])
-    unprocessable!(message.errors.full_messages) unless message.valid?
-
-    package = PackageModel.where(guid: params[:guid]).eager(:space, space: :organization).all.first
-    package_not_found! unless package && can_read?(package.space.guid, package.space.organization.guid)
-    unauthorized! unless can_write?(package.space.guid)
-
-    unprocessable!('Package type must be bits.') unless package.type == 'bits'
-    bits_already_uploaded! if package.state != PackageModel::CREATED_STATE
-
-    begin
-      PackageUpload.new.upload_async(
-        message:         message,
-        package:         package,
-        config:          configuration,
-        user_audit_info: user_audit_info
-      )
-    rescue PackageUpload::InvalidPackage => e
-      unprocessable!(e.message)
-    end
-
-    render status: :ok, json: Presenters::V3::PackagePresenter.new(package)
+    # do some polling job
+    render status: :ok, json: { url: CloudController::DependencyLocator.instance.package_blobstore.blob(params[:guid]).public_upload_url }
+    # message = PackageUploadMessage.create_from_params(params[:body])
+    # unprocessable!(message.errors.full_messages) unless message.valid?
+    #
+    # package = PackageModel.where(guid: params[:guid]).eager(:space, space: :organization).all.first
+    # package_not_found! unless package && can_read?(package.space.guid, package.space.organization.guid)
+    # unauthorized! unless can_write?(package.space.guid)
+    #
+    # unprocessable!('Package type must be bits.') unless package.type == 'bits'
+    # bits_already_uploaded! if package.state != PackageModel::CREATED_STATE
+    #
+    # begin
+    #   PackageUpload.new.upload_async(
+    #     message:         message,
+    #     package:         package,
+    #     config:          configuration,
+    #     user_audit_info: user_audit_info
+    #   )
+    # rescue PackageUpload::InvalidPackage => e
+    #   unprocessable!(e.message)
+    # end
+    #
+    # render status: :ok, json: Presenters::V3::PackagePresenter.new(package)
   end
 
   def download

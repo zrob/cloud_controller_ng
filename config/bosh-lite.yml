@@ -298,7 +298,7 @@ diego:
 shared_isolation_segment_name: shared
 
 bits_service:
-  enabled: false
+  enabled: true
   public_endpoint: http://bits-service.bosh-lite.com
   private_endpoint: http://bits-service.service.cf.internal
   username: admin
