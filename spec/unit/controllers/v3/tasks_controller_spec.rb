@@ -76,19 +76,6 @@ RSpec.describe TasksController, type: :controller do
         end
       end
 
-      context 'when the user does not have write scope' do
-        before do
-          set_current_user(user, scopes: ['cloud_controller.read'])
-        end
-
-        it 'raises 403' do
-          post :create, app_guid: app_model.guid, body: req_body
-
-          expect(response.status).to eq(403)
-          expect(response.body).to include 'NotAuthorized'
-        end
-      end
-
       context 'when the user does not have write permissions on the app space' do
         before do
           allow_user_read_access_for(user, spaces: [space])
@@ -252,18 +239,6 @@ RSpec.describe TasksController, type: :controller do
     end
 
     context 'permissions' do
-      context 'when the user does not have read scope' do
-        before do
-          set_current_user(user, scopes: [])
-        end
-
-        it 'raises 403' do
-          get :show, task_guid: task.guid
-
-          expect(response.status).to eq(403)
-          expect(response.body).to include 'NotAuthorized'
-        end
-      end
 
       context 'when the user does not have read permissions on the app space' do
         before do

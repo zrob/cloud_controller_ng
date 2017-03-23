@@ -68,18 +68,6 @@ RSpec.describe ServiceBindingsController, type: :controller do
         end
       end
 
-      context 'when the user does not have write scope' do
-        before do
-          set_current_user(user, scopes: ['cloud_controller.read'])
-        end
-
-        it 'returns a 403 NotAuthorized error' do
-          post :create, body: req_body
-
-          expect(response.status).to eq 403
-          expect(response.body).to include 'NotAuthorized'
-        end
-      end
     end
 
     context 'when the request is missing required fields' do
@@ -336,19 +324,6 @@ RSpec.describe ServiceBindingsController, type: :controller do
           get :show, guid: service_binding.guid
 
           expect(response.status).to eq 200
-        end
-      end
-
-      context 'when the user does not have read scope' do
-        before do
-          set_current_user(user, scopes: [''])
-        end
-
-        it 'returns a 403 NotAuthorized error' do
-          get :show, guid: service_binding.guid
-
-          expect(response.status).to eq 403
-          expect(response.body).to include 'NotAuthorized'
         end
       end
 

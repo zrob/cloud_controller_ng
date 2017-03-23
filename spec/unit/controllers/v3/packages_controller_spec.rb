@@ -15,6 +15,8 @@ RSpec.describe PackagesController, type: :controller do
       allow_user_write_access(user, space: space)
     end
 
+    include_examples 'need read scope', 'zip', 'guid'
+
     it 'returns 200 and updates the package state' do
       post :upload, params.merge(guid: package.guid)
 
