@@ -14,6 +14,9 @@ Rails.application.routes.draw do
   patch '/apps/:guid/relationships/current_droplet', to: 'apps_v3#assign_current_droplet'
   get '/apps/:guid/relationships/current_droplet', to: 'apps_v3#current_droplet'
 
+  # builds
+  post '/builds', to: 'builds#create'
+
   # processes
   get '/processes', to: 'processes#index'
   get '/processes/:process_guid', to: 'processes#show'
