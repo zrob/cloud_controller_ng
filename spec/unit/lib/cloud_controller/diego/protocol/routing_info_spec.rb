@@ -38,7 +38,6 @@ module VCAP::CloudController
           end
 
           context 'http routes' do
-
             context 'with no app ports specified in route mapping' do
               before do
                 RouteMappingModel.make(app: process.app, route: route_with_service, process_type: process.type, app_port: nil)
@@ -182,7 +181,7 @@ module VCAP::CloudController
 
             context 'when using a router group' do
               let(:router_group_type) { 'http' }
-              let(:domain) { SharedDomain.make(name: 'httpdomain.com', router_group_guid: router_group_guid)}
+              let(:domain) { SharedDomain.make(name: 'httpdomain.com', router_group_guid: router_group_guid) }
               let(:http_route) { Route.make(domain: domain, space: space, port: 8080) }
               let!(:route_mapping) { RouteMappingModel.make(app: process.app, route: http_route) }
 
