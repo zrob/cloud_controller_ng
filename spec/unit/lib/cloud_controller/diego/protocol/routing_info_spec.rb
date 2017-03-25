@@ -186,10 +186,6 @@ module VCAP::CloudController
               let!(:route_mapping) { RouteMappingModel.make(app: process.app, route: http_route) }
 
               it 'returns the router group guid in the http routing info' do
-                expected_http = [
-                  { 'router_group_guid' => domain.router_group_guid, 'port' => http_route.port, 'hostname' => "host-1.#{domain.name}" },
-                ]
-
                 expect(ri.keys).to contain_exactly('http_routes')
                 hr = ri['http_routes'][0]
                 expect(hr.keys).to contain_exactly('router_group_guid', 'port', 'hostname')
@@ -305,11 +301,6 @@ module VCAP::CloudController
             end
 
             it 'returns the app port in routing info' do
-              expected_http = [
-                { 'hostname' => route_with_service.uri, 'port' => 8080 },
-                { 'hostname' => route_with_service.uri, 'port' => 9090 },
-              ]
-
               expected_tcp = [
                 { 'router_group_guid' => tcp_domain.router_group_guid, 'external_port' => tcp_route.port, 'container_port' => 5555 },
               ]
