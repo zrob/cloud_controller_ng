@@ -67,6 +67,7 @@ module VCAP::CloudController
       it { is_expected.to have_associated :default_users, class: User }
       it { is_expected.to have_associated :domains, class: SharedDomain }
       it { is_expected.to have_associated :space_quota_definition, associated_instance: ->(space) { SpaceQuotaDefinition.make(organization: space.organization) } }
+      it { is_expected.to have_associated :builds, class: BuildModel }
 
       describe 'space_quota_definition' do
         subject(:space) { Space.make }
@@ -552,6 +553,18 @@ module VCAP::CloudController
           subject.destroy
         }.to change {
           App.where(id: [app1.id, app2.id, app3.id]).count
+        }.by(-3)
+      end
+      
+      it 'destroys all builds' do
+        build1 = BuildModel.make(space: space)
+        build2 = BuildModel.make(space: space)
+        build3 = BuildModel.make(space: space)
+
+        expect {
+          subject.destroy
+        }.to change {
+          BuildModel.where(id: [build1.id, build2.id, build3.id]).count
         }.by(-3)
       end
     end

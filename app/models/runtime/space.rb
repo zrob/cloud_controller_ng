@@ -117,12 +117,15 @@ module VCAP::CloudController
 
     many_to_one :space_quota_definition
 
+    one_to_many :builds, class: 'VCAP::CloudController::BuildModel', key: :space_guid, primary_key: :guid, without_guid_generation: true
+
     add_association_dependencies(
       default_users: :nullify,
       processes: :destroy,
       routes: :destroy,
       security_groups: :nullify,
       staging_security_groups: :nullify,
+      builds: :destroy,
     )
 
     export_attributes :name, :organization_guid, :space_quota_definition_guid, :allow_ssh
