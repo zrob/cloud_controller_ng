@@ -19,10 +19,13 @@ module VCAP::CloudController
     end
 
     def delete_unmapped_route(route:)
-      delete_count = Route.where(id: route.id).
-                     exclude(guid: RouteMappingModel.select(:route_guid)).
-                     exclude(id: RouteBinding.select(:route_id)).
-                     delete
+      delete_count = 0
+      Route.db.transaction do
+        delete_count = Route.where(id: route.id).
+                       exclude(guid: RouteMappingModel.for_update.select(:route_guid)).
+                       exclude(id: RouteBinding.for_update.select(:route_id)).
+                       delete
+      end
 
       if delete_count > 0
         route_event_repository.record_route_delete_request(route, user_audit_info, false)
