@@ -63,6 +63,7 @@ logging:
 
 loggregator:
   router: "127.0.0.1:12345"
+  ca_file: "spec/fixtures/certs/loggregator_ca.crt"
 
 message_bus_servers:
   - nats://127.0.0.1:4222

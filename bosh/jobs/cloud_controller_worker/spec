@@ -21,6 +21,7 @@ templates:
   mutual_tls.crt.erb: config/certs/mutual_tls.crt
   mutual_tls.key.erb: config/certs/mutual_tls.key
   uaa_ca.crt.erb: config/certs/uaa_ca.crt
+  loggregator_ca.crt.erb: config/certs/loggregator_ca.crt
 
 packages:
   - capi_utils
@@ -675,5 +676,7 @@ properties:
     default: 1024
 
   cc.loggregator.internal_url:
-    description: "Internal url used to communicate with traffic_controller"
+    description: "Internal url used to communicate with TrafficController"
     default: "http://loggregator-trafficcontroller.service.cf.internal:8081"
+  loggregator.tls.ca_cert:
+    description: "The certificate authority being used by TrafficController"

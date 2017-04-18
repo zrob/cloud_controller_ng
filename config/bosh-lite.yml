@@ -85,6 +85,8 @@ loggregator:
   router: 127.0.0.1:3457
   url: wss://loggregator.bosh-lite.com:443
   internal_url: 'http://loggregator-trafficcontroller.service.cf.internal:8081'
+  ca_file: "spec/fixtures/certs/loggregator_ca.crt"
+
 
 doppler:
   enabled: false

@@ -165,6 +165,7 @@ logging:
 loggregator:
   router: <%= host %>:<%= port %>
   url: ws<%= "s" if p("logger_endpoint.use_ssl") %>://loggregator.<%= p("system_domain") %>:<%= p("logger_endpoint.port") %>
+  ca_file: /var/vcap/jobs/cloud_controller_clock/config/certs/loggregator_ca.crt
 <% end %>
 
 <% db = p("ccdb.databases").find { |db| db["tag"] == "cc" } %>

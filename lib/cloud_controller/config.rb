@@ -224,6 +224,7 @@ module VCAP::CloudController
 
         optional(:loggregator) => {
           optional(:router) => String,
+          :ca_file => String,
         },
 
         optional(:doppler) => {
