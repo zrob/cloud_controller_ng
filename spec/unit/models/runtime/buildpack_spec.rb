@@ -181,10 +181,9 @@ module VCAP::CloudController
 
       it "locks the buildpacks so we don't get duplicate positions", isolation: :truncation do
         buildpacks_lock = double(:buildpacks_lock)
-        allow(Locking).to receive(:[]) { buildpacks_lock }
-        allow(Locking[name: 'buildpacks']).to receive(:lock!)
+        allow(Buildpack).to receive(:for_update)
         Buildpack.create(name: 'another_buildpack', key: 'abcdef')
-        expect(Locking[name: 'buildpacks']).to have_received(:lock!)
+        expect(Buildpack).to have_received(:for_update)
       end
 
       context 'when other buildpacks exist' do
@@ -281,10 +280,9 @@ module VCAP::CloudController
 
       it "locks the buildpacks so we don't get duplicate positions" do
         buildpacks_lock = double(:buildpacks_lock)
-        allow(Locking).to receive(:[]) { buildpacks_lock }
-        allow(Locking[name: 'buildpacks']).to receive(:lock!)
+        allow(Buildpack).to receive(:for_update)
         buildpacks.last.update position: 1
-        expect(Locking[name: 'buildpacks']).to have_received(:lock!)
+        expect(Buildpack).to have_received(:for_update)
       end
 
       it "does not update the position if it isn't specified" do
@@ -386,10 +384,9 @@ module VCAP::CloudController
 
       it 'grabs a lock while destroying a buildpack', isolation: :truncation do
         buildpacks_lock = double(:buildpacks_lock)
-        allow(Locking).to receive(:[]) { buildpacks_lock }
-        allow(Locking[name: 'buildpacks']).to receive(:lock!)
+        allow(Buildpack).to receive(:for_update)
         buildpack1.destroy
-        expect(Locking[name: 'buildpacks']).to have_received(:lock!)
+        expect(Buildpack).to have_received(:for_update)
       end
 
       it "doesn't shift when the last position is deleted" do

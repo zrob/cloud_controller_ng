@@ -15,8 +15,8 @@ module VCAP::CloudController
     end
 
     def before_save
+      Buildpack.for_update
       if new? || column_changed?(:position)
-        Locking[name: 'buildpacks'].lock!
         positioner = BuildpackPositioner.new
         self.position = if new?
                           if Buildpack.at_last_position.nil?
@@ -36,7 +36,7 @@ module VCAP::CloudController
     end
 
     def before_destroy
-      Locking[name: 'buildpacks'].lock!
+      Buildpack.for_update
     end
 
     def after_destroy
