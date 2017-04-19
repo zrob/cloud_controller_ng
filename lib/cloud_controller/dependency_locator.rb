@@ -358,7 +358,10 @@ module CloudController
     end
 
     def build_traffic_controller_client
-      TrafficController::Client.new(url: HashUtils.dig(@config, :loggregator, :internal_url))
+      TrafficController::Client.new(
+        url:          HashUtils.dig(@config, :loggregator, :internal_url),
+        ca_cert_file: HashUtils.dig(@config, :loggregator, :ca_file)
+      )
     end
 
     def create_object_renderer(opts={})

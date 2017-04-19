@@ -5,8 +5,8 @@ module TrafficController
   class Client
     BOUNDARY_REGEXP = /boundary=(.+)/
 
-    def initialize(url:)
-      @url = url
+    def initialize(url:, ca_cert_file:)
+      @client = build_client(url, ca_cert_file)
     end
 
     def container_metrics(auth_token:, app_guid:)
@@ -35,7 +35,7 @@ module TrafficController
 
     private
 
-    attr_reader :url
+    attr_reader :client
 
     def extract_boundary!(content_type)
       match_data = BOUNDARY_REGEXP.match(content_type)
@@ -54,16 +54,13 @@ module TrafficController
       raise DecodeError.new(e.message)
     end
 
-    def client
-      @client ||= build_client
-    end
-
-    def build_client
+    def build_client(url, ca_cert_file)
       client                        = HTTPClient.new(base_url: url)
       client.connect_timeout        = 10
       client.send_timeout           = 10
       client.receive_timeout        = 10
-      client.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      client.ssl_config.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      client.ssl_config.set_trust_ca(ca_cert_file)
       client
     end
 

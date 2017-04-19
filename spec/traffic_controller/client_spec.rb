@@ -5,8 +5,9 @@ require 'openssl'
 module TrafficController
   RSpec.describe Client do
     let(:doppler_url) { 'https://doppler.example.com:4443' }
+    let(:ca_cert_file) { File.join(Paths::FIXTURES, 'certs/loggregator_ca.crt') }
 
-    subject(:client) { Client.new(url: doppler_url) }
+    subject(:client) { Client.new(url: doppler_url, ca_cert_file: ca_cert_file) }
     let(:expected_request_options) { { 'headers' => { 'Authorization' => 'bearer oauth-token' } } }
 
     def build_response_body(boundary, encoded_envelopes)
