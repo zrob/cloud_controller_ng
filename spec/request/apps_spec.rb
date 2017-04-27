@@ -16,16 +16,16 @@ RSpec.describe 'Apps' do
     it 'creates an app' do
       buildpack      = VCAP::CloudController::Buildpack.make
       create_request = {
-        name: 'my_app',
+        name:                  'my_app',
         environment_variables: { open: 'source' },
-        lifecycle: {
+        lifecycle:             {
           type: 'buildpack',
           data: {
-            stack: nil,
+            stack:      nil,
             buildpacks: [buildpack.name]
           }
         },
-        relationships: {
+        relationships:         {
           space: {
             data: {
               guid: space.guid
@@ -43,30 +43,30 @@ RSpec.describe 'Apps' do
       expect(VCAP::CloudController::AppModel.find(guid: app_guid)).to be
       expect(parsed_response).to be_a_response_like(
         {
-          'name'                    => 'my_app',
-          'guid'                    => app_guid,
-          'state' => 'STOPPED',
-          'lifecycle' => {
+          'name'       => 'my_app',
+          'guid'       => app_guid,
+          'state'      => 'STOPPED',
+          'lifecycle'  => {
             'type' => 'buildpack',
             'data' => {
               'buildpacks' => [buildpack.name],
               'stack'      => VCAP::CloudController::Stack.default.name,
             }
           },
-          'created_at'              => iso8601,
-          'updated_at'              => iso8601,
-          'links'                   => {
-            'self'           => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}" },
-            'processes'      => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/processes" },
-            'packages'       => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/packages" },
+          'created_at' => iso8601,
+          'updated_at' => iso8601,
+          'links'      => {
+            'self'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}" },
+            'processes'             => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/processes" },
+            'packages'              => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/packages" },
             'environment_variables' => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/environment_variables" },
-            'space' => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
-            'current_droplet' => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/droplets/current" },
-            'droplets'       => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/droplets" },
-            'tasks'          => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/tasks" },
-            'route_mappings' => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/route_mappings" },
-            'start'          => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/start", 'method' => 'PUT' },
-            'stop'           => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/stop", 'method' => 'PUT' },
+            'space'                 => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
+            'current_droplet'       => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/droplets/current" },
+            'droplets'              => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/droplets" },
+            'tasks'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/tasks" },
+            'route_mappings'        => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/route_mappings" },
+            'start'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/start", 'method' => 'PUT' },
+            'stop'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/stop", 'method' => 'PUT' },
           }
         }
       )
@@ -108,27 +108,27 @@ RSpec.describe 'Apps' do
 
         created_app       = VCAP::CloudController::AppModel.last
         expected_response = {
-          'name'                    => 'my_app',
-          'guid'                    => created_app.guid,
-          'state' => 'STOPPED',
-          'lifecycle' => {
+          'name'       => 'my_app',
+          'guid'       => created_app.guid,
+          'state'      => 'STOPPED',
+          'lifecycle'  => {
             'type' => 'docker',
             'data' => {}
           },
-          'created_at'              => iso8601,
-          'updated_at'              => iso8601,
-          'links'                   => {
-            'self'           => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}" },
-            'processes'      => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/processes" },
-            'packages'       => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/packages" },
+          'created_at' => iso8601,
+          'updated_at' => iso8601,
+          'links'      => {
+            'self'                  => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}" },
+            'processes'             => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/processes" },
+            'packages'              => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/packages" },
             'environment_variables' => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/environment_variables" },
-            'space' => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
-            'current_droplet' => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/droplets/current" },
-            'droplets'       => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/droplets" },
-            'tasks'          => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/tasks" },
-            'route_mappings' => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/route_mappings" },
-            'start'          => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/start", 'method' => 'PUT' },
-            'stop'           => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/stop", 'method' => 'PUT' },
+            'space'                 => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
+            'current_droplet'       => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/droplets/current" },
+            'droplets'              => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/droplets" },
+            'tasks'                 => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/tasks" },
+            'route_mappings'        => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/route_mappings" },
+            'start'                 => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/start", 'method' => 'PUT' },
+            'stop'                  => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/stop", 'method' => 'PUT' },
           }
         }
 
@@ -189,54 +189,54 @@ RSpec.describe 'Apps' do
           },
           'resources' => [
             {
-              'guid'                    => app_model1.guid,
-              'name'                    => 'name1',
-              'state' => 'STOPPED',
-              'lifecycle' => {
+              'guid'       => app_model1.guid,
+              'name'       => 'name1',
+              'state'      => 'STOPPED',
+              'lifecycle'  => {
                 'type' => 'buildpack',
                 'data' => {
                   'buildpacks' => ['bp-name'],
                   'stack'      => 'stack-name',
                 }
               },
-              'created_at'              => iso8601,
-              'updated_at'              => iso8601,
-              'links' => {
-                'self'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}" },
-                'processes'      => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/processes" },
-                'packages'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/packages" },
+              'created_at' => iso8601,
+              'updated_at' => iso8601,
+              'links'      => {
+                'self'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}" },
+                'processes'             => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/processes" },
+                'packages'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/packages" },
                 'environment_variables' => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/environment_variables" },
-                'space' => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
-                'current_droplet' => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/droplets/current" },
-                'droplets'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/droplets" },
-                'tasks'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/tasks" },
-                'route_mappings' => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/route_mappings" },
-                'start'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/start", 'method' => 'PUT' },
-                'stop'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/stop", 'method' => 'PUT' },
+                'space'                 => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
+                'current_droplet'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/droplets/current" },
+                'droplets'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/droplets" },
+                'tasks'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/tasks" },
+                'route_mappings'        => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/route_mappings" },
+                'start'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/start", 'method' => 'PUT' },
+                'stop'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model1.guid}/stop", 'method' => 'PUT' },
               }
             },
             {
-              'guid'                    => app_model2.guid,
-              'name'                    => 'name2',
-              'state' => 'STARTED',
-              'lifecycle' => {
+              'guid'       => app_model2.guid,
+              'name'       => 'name2',
+              'state'      => 'STARTED',
+              'lifecycle'  => {
                 'type' => 'docker',
                 'data' => {}
               },
-              'created_at'              => iso8601,
-              'updated_at'              => iso8601,
-              'links' => {
-                'self'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}" },
-                'processes'      => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/processes" },
-                'packages'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/packages" },
+              'created_at' => iso8601,
+              'updated_at' => iso8601,
+              'links'      => {
+                'self'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}" },
+                'processes'             => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/processes" },
+                'packages'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/packages" },
                 'environment_variables' => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/environment_variables" },
-                'space' => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
-                'current_droplet' => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/droplets/current" },
-                'droplets'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/droplets" },
-                'tasks'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/tasks" },
-                'route_mappings' => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/route_mappings" },
-                'start'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/start", 'method' => 'PUT' },
-                'stop'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/stop", 'method' => 'PUT' },
+                'space'                 => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
+                'current_droplet'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/droplets/current" },
+                'droplets'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/droplets" },
+                'tasks'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/tasks" },
+                'route_mappings'        => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/route_mappings" },
+                'start'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/start", 'method' => 'PUT' },
+                'stop'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model2.guid}/stop", 'method' => 'PUT' },
               }
             }
           ]
@@ -348,14 +348,14 @@ RSpec.describe 'Apps' do
         VCAP::CloudController::AppModel.make(space: space, name: 'delta')
         VCAP::CloudController::AppModel.make(space: space, name: 'theta')
 
-        ascending = ['alpha', 'delta', 'gamma', 'theta', 'zed']
+        ascending  = ['alpha', 'delta', 'gamma', 'theta', 'zed']
         descending = ascending.reverse
 
         # ASCENDING
         get '/v3/apps?order_by=name', nil, user_header
         expect(last_response.status).to eq(200)
         parsed_response = MultiJson.load(last_response.body)
-        app_names = parsed_response['resources'].map { |i| i['name'] }
+        app_names       = parsed_response['resources'].map { |i| i['name'] }
         expect(app_names).to eq(ascending)
         expect(parsed_response['pagination']['first']['href']).to include("order_by=#{CGI.escape('+')}name")
 
@@ -363,7 +363,7 @@ RSpec.describe 'Apps' do
         get '/v3/apps?order_by=-name', nil, user_header
         expect(last_response.status).to eq(200)
         parsed_response = MultiJson.load(last_response.body)
-        app_names = parsed_response['resources'].map { |i| i['name'] }
+        app_names       = parsed_response['resources'].map { |i| i['name'] }
         expect(app_names).to eq(descending)
         expect(parsed_response['pagination']['first']['href']).to include('order_by=-name')
       end
@@ -394,12 +394,12 @@ RSpec.describe 'Apps' do
       parsed_response = MultiJson.load(last_response.body)
       expect(parsed_response).to be_a_response_like(
         {
-          'name'                    => 'my_app',
-          'guid'                    => app_model.guid,
-          'state' => 'STARTED',
-          'created_at'              => iso8601,
-          'updated_at'              => iso8601,
-          'lifecycle'               => {
+          'name'       => 'my_app',
+          'guid'       => app_model.guid,
+          'state'      => 'STARTED',
+          'created_at' => iso8601,
+          'updated_at' => iso8601,
+          'lifecycle'  => {
             'type' => 'buildpack',
             'data' => {
               'buildpacks' => ['bp-name'],
@@ -407,17 +407,17 @@ RSpec.describe 'Apps' do
             }
           },
           'links' => {
-            'self'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}" },
-            'processes'      => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/processes" },
-            'packages'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/packages" },
+            'self'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}" },
+            'processes'             => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/processes" },
+            'packages'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/packages" },
             'environment_variables' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/environment_variables" },
-            'space' => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
-            'current_droplet' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets/current" },
-            'droplets'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets" },
-            'tasks'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/tasks" },
-            'route_mappings' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/route_mappings" },
-            'start'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/start", 'method' => 'PUT' },
-            'stop'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/stop", 'method' => 'PUT' },
+            'space'                 => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
+            'current_droplet'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets/current" },
+            'droplets'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets" },
+            'tasks'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/tasks" },
+            'route_mappings'        => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/route_mappings" },
+            'start'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/start", 'method' => 'PUT' },
+            'stop'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/stop", 'method' => 'PUT' },
           }
         }
       )
@@ -550,12 +550,12 @@ RSpec.describe 'Apps' do
       stack = VCAP::CloudController::Stack.make(name: 'redhat')
 
       update_request = {
-        name:                  'new-name',
-        lifecycle:             {
+        name:      'new-name',
+        lifecycle: {
           type: 'buildpack',
           data: {
             buildpacks: ['http://gitwheel.org/my-app'],
-            stack:     stack.name
+            stack:      stack.name
           }
         }
       }
@@ -568,30 +568,30 @@ RSpec.describe 'Apps' do
       parsed_response = MultiJson.load(last_response.body)
       expect(parsed_response).to be_a_response_like(
         {
-          'name'                    => 'new-name',
-          'guid'                    => app_model.guid,
-          'state' => 'STOPPED',
-          'lifecycle' => {
+          'name'       => 'new-name',
+          'guid'       => app_model.guid,
+          'state'      => 'STOPPED',
+          'lifecycle'  => {
             'type' => 'buildpack',
             'data' => {
               'buildpacks' => ['http://gitwheel.org/my-app'],
-              'stack' => stack.name,
+              'stack'      => stack.name,
             }
           },
-          'created_at'              => iso8601,
-          'updated_at'              => iso8601,
-          'links'                   => {
-            'self'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}" },
-            'processes'      => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/processes" },
-            'packages'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/packages" },
+          'created_at' => iso8601,
+          'updated_at' => iso8601,
+          'links'      => {
+            'self'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}" },
+            'processes'             => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/processes" },
+            'packages'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/packages" },
             'environment_variables' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/environment_variables" },
-            'space' => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
-            'current_droplet' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets/current" },
-            'droplets'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets" },
-            'tasks'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/tasks" },
-            'route_mappings' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/route_mappings" },
-            'start'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/start", 'method' => 'PUT' },
-            'stop'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/stop", 'method' => 'PUT' },
+            'space'                 => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
+            'current_droplet'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets/current" },
+            'droplets'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets" },
+            'tasks'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/tasks" },
+            'route_mappings'        => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/route_mappings" },
+            'start'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/start", 'method' => 'PUT' },
+            'stop'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/stop", 'method' => 'PUT' },
           }
         }
       )
@@ -639,12 +639,12 @@ RSpec.describe 'Apps' do
 
       parsed_response = MultiJson.load(last_response.body)
       expect(parsed_response).to be_a_response_like({
-        'name'                    => 'app-name',
-        'guid'                    => app_model.guid,
-        'state' => 'STARTED',
-        'created_at'              => iso8601,
-        'updated_at'              => iso8601,
-        'lifecycle'               => {
+        'name'       => 'app-name',
+        'guid'       => app_model.guid,
+        'state'      => 'STARTED',
+        'created_at' => iso8601,
+        'updated_at' => iso8601,
+        'lifecycle'  => {
           'type' => 'buildpack',
           'data' => {
             'buildpacks' => ['http://example.com/git'],
@@ -652,17 +652,17 @@ RSpec.describe 'Apps' do
           }
         },
         'links' => {
-          'self'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}" },
-          'processes'      => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/processes" },
-          'packages'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/packages" },
+          'self'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}" },
+          'processes'             => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/processes" },
+          'packages'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/packages" },
           'environment_variables' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/environment_variables" },
-          'space' => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
-          'current_droplet' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets/current" },
-          'droplets'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets" },
-          'tasks'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/tasks" },
-          'route_mappings' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/route_mappings" },
-          'start'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/start", 'method' => 'PUT' },
-          'stop'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/stop", 'method' => 'PUT' },
+          'space'                 => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
+          'current_droplet'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets/current" },
+          'droplets'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets" },
+          'tasks'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/tasks" },
+          'route_mappings'        => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/route_mappings" },
+          'start'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/start", 'method' => 'PUT' },
+          'stop'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/stop", 'method' => 'PUT' },
         }
       })
 
@@ -706,12 +706,12 @@ RSpec.describe 'Apps' do
       parsed_response = MultiJson.load(last_response.body)
       expect(parsed_response).to be_a_response_like(
         {
-          'name'                    => 'app-name',
-          'guid'                    => app_model.guid,
-          'state' => 'STOPPED',
-          'created_at'              => iso8601,
-          'updated_at'              => iso8601,
-          'lifecycle'               => {
+          'name'       => 'app-name',
+          'guid'       => app_model.guid,
+          'state'      => 'STOPPED',
+          'created_at' => iso8601,
+          'updated_at' => iso8601,
+          'lifecycle'  => {
             'type' => 'buildpack',
             'data' => {
               'buildpacks' => ['http://example.com/git'],
@@ -719,17 +719,17 @@ RSpec.describe 'Apps' do
             }
           },
           'links' => {
-            'self'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}" },
-            'processes'      => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/processes" },
-            'packages'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/packages" },
+            'self'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}" },
+            'processes'             => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/processes" },
+            'packages'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/packages" },
             'environment_variables' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/environment_variables" },
-            'space' => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
-            'current_droplet' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets/current" },
-            'droplets'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets" },
-            'tasks'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/tasks" },
-            'route_mappings' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/route_mappings" },
-            'start'          => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/start", 'method' => 'PUT' },
-            'stop'           => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/stop", 'method' => 'PUT' },
+            'space'                 => { 'href' => "#{link_prefix}/v2/spaces/#{space.guid}" },
+            'current_droplet'       => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets/current" },
+            'droplets'              => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets" },
+            'tasks'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/tasks" },
+            'route_mappings'        => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/route_mappings" },
+            'start'                 => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/start", 'method' => 'PUT' },
+            'stop'                  => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/stop", 'method' => 'PUT' },
           }
         }
       )
@@ -790,7 +790,7 @@ RSpec.describe 'Apps' do
           'guid' => droplet_model.guid
         },
         'links' => {
-          'self' => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/relationships/current_droplet" },
+          'self'    => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/relationships/current_droplet" },
           'related' => { 'href' => "#{link_prefix}/v3/apps/#{app_guid}/droplets/current" }
         }
       })
@@ -846,7 +846,7 @@ RSpec.describe 'Apps' do
         'staging_memory_in_mb'  => 100,
         'staging_disk_in_mb'    => 200,
         'result'                => {
-          'checksum' => { 'type' => 'sha256', 'value' => 'droplet-sha256-checksum' },
+          'checksum'           => { 'type' => 'sha256', 'value' => 'droplet-sha256-checksum' },
           'buildpacks'         => [{ 'name' => 'http://buildpack.git.url.com', 'detect_output' => nil }],
           'stack'              => 'stack-name',
           'execution_metadata' => 'some-data',
@@ -899,7 +899,7 @@ RSpec.describe 'Apps' do
           'guid' => droplet.guid
         },
         'links' => {
-          'self' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/relationships/current_droplet" },
+          'self'    => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/relationships/current_droplet" },
           'related' => { 'href' => "#{link_prefix}/v3/apps/#{app_model.guid}/droplets/current" }
         }
       }
@@ -1061,9 +1061,9 @@ RSpec.describe 'Apps' do
   describe 'PATCH /v3/apps/:guid/environment_variables' do
     it 'patches the environment variables for the app' do
       app_model = VCAP::CloudController::AppModel.make(
-        name: 'name1',
-        space: space,
-        desired_state: 'STOPPED',
+        name:                  'name1',
+        space:                 space,
+        desired_state:         'STOPPED',
         environment_variables: {
           override: 'original',
           preserve: 'keep'
