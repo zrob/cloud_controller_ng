@@ -43,6 +43,7 @@ gem 'actionview'
 gem 'public_suffix', '~> 1.0'
 gem 'protobuf'
 gem 'net-ssh'
+gem 'json_schema'
 
 # Requiring this particular commit to get a fix to a race condition when subscribing before a connection is made.
 # (see https://github.com/nats-io/ruby-nats/commit/3f3efc6bc41cc483f2d90cb9d401ba4aa3e727d3)

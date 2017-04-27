@@ -1,0 +1,412 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cloud Foundry V3 API Schema",
+  "oneOf": [
+    {
+      "$ref": "#/definitions/single_resource"
+    },
+    {
+      "$ref": "#/definitions/list_resource"
+    }
+  ],
+  "properties": {
+    "app": {
+      "$ref": "#/definitions/app"
+    }
+  },
+  "definitions": {
+    "buildpack_lifecycle": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": ["buildpack"]
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "buildpacks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "stack": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+
+    "docker_lifecycle": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": ["docker"]
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      }
+    },
+
+    "app": {
+      "title": "App",
+      "id": "schema/app",
+      "type": "object",
+      "required": [
+        "guid",
+        "created_at",
+        "updated_at",
+        "links",
+        "name",
+        "state",
+        "lifecycle"
+      ],
+      "definitions": {
+        "guid": {
+          "type": "string"
+        }
+      },
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "lifecycle": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/buildpack_lifecycle"
+            },
+            {
+              "$ref": "#/definitions/docker_lifecycle"
+            }
+          ]
+        },
+        "guid": {
+          "$ref": "#/definitions/app/definitions/guid"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "links": {
+          "$ref": "#/definitions/links"
+        }
+      },
+      "additionalProperties": false,
+      "links": [
+        {
+          "title": "Create",
+          "description": "Create a new app.",
+          "href": "/v3/apps",
+          "method": "POST",
+          "rel": "create",
+          "schema": {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "relationships": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/relationships"
+                  },
+                  {
+                    "properties": {
+                      "space": {
+                        "$ref": "#/definitions/relationshipToOneRequired"
+                      }
+                    }
+                  }
+                ],
+                "required": [
+                  "space"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "relationships"
+            ],
+            "type": "object"
+          },
+          "targetSchema": {
+            "$ref": "#"
+          }
+        },
+        {
+          "title": "List",
+          "href": "/v3/apps",
+          "method": "GET",
+          "targetSchema": {
+            "$ref": "#"
+          }
+        },
+        {
+          "title": "Show",
+          "href": "/v3/apps/{(%23%2Fdefinitions%2Fapp%2Fdefinitions%2Fguid)}",
+          "method": "GET",
+          "targetSchema": {
+            "$ref": "#"
+          }
+        }
+      ]
+    },
+    "single_resource": {
+      "$ref": "#/definitions/resource",
+      "additionalProperties": true
+    },
+    "list_resource": {
+      "type": "object",
+      "required": [
+        "resources"
+      ],
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resource"
+          },
+          "uniqueItems": true
+        },
+        "pagination": {
+          "$ref": "#/definitions/pagination"
+        }
+      },
+      "additionalProperties": false
+    },
+    "resource": {
+      "type": "object",
+      "required": [
+        "guid",
+        "created_at",
+        "updated_at",
+        "links"
+      ],
+      "properties": {
+        "guid": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "relationships": {
+          "$ref": "#/definitions/relationships"
+        },
+        "links": {
+          "$ref": "#/definitions/links"
+        }
+      }
+    },
+    "links": {
+      "description": "A resource object **MAY** contain references to other resource objects (\"relationships\"). Relationships may be to-one or to-many. Relationships can be specified by including a member in a resource's links object.",
+      "type": "object",
+      "properties": {
+        "self": {
+          "description": "A `self` member, whose value is a URL for the relationship itself (a \"relationship URL\"). This URL allows the client to directly manipulate the relationship. For example, it would allow a client to remove an `author` from an `article` without deleting the people resource itself.",
+          "$ref": "#/definitions/link"
+        },
+        "related": {
+          "$ref": "#/definitions/link"
+        },
+        "method": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "link": {
+      "description": "A link **MUST** be represented as either: a string containing the link's URL or a link object.",
+      "oneOf": [
+        {
+          "description": "A string containing the link's URL.",
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object",
+          "required": [
+            "href"
+          ],
+          "properties": {
+            "href": {
+              "description": "A string containing the link's URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      ]
+    },
+    "relationships": {
+      "type": "object",
+      "patternProperties": {
+        "^\\w[-\\w_]*$": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/relationshipToOne"
+            },
+            {
+              "$ref": "#/definitions/relationshipToMany"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "relationshipToOne": {
+      "type": "object",
+      "required": [
+        "data"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/empty"
+            },
+            {
+              "$ref": "#/definitions/linkage"
+            }
+          ]
+        },
+        "links": {
+          "$ref": "#/definitions/links"
+        }
+      }
+    },
+    "relationshipToOneRequired": {
+      "type": "object",
+      "required": [
+        "data"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/linkage"
+        },
+        "links": {
+          "$ref": "#/definitions/links"
+        }
+      }
+    },
+    "relationshipToMany": {
+      "type": "object",
+      "properties": {
+        "links": {
+          "$ref": "#/definitions/links"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/linkage"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "empty": {
+      "description": "Describes an empty to-one relationship.",
+      "type": "null"
+    },
+    "linkage": {
+      "description": "The \"type\" and \"id\" to non-empty members.",
+      "type": "object",
+      "required": [
+        "guid"
+      ],
+      "properties": {
+        "guid": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pagination": {
+      "type": "object",
+      "properties": {
+        "total_results": {
+          "type": "integer"
+        },
+        "total_pages": {
+          "type": "integer"
+        },
+        "first": {
+          "description": "The first page of data",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/link"
+            },
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last": {
+          "description": "The last page of data",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/link"
+            },
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "previous": {
+          "description": "The previous page of data",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/link"
+            },
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "next": {
+          "description": "The next page of data",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/link"
+            },
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

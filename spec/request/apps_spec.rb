@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'json_schema'
 
 RSpec.describe 'Apps' do
   let(:user) { VCAP::CloudController::User.make }
@@ -7,12 +8,19 @@ RSpec.describe 'Apps' do
   let(:user_email) { Sham.email }
   let(:user_name) { 'some-username' }
 
+  let(:api_schema) { JsonSchema.parse!(JSON.parse(File.read("#{Paths::FIXTURES}/api.json"))) }
+  let(:app_schema) { api_schema.definitions['app'] }
+
   before do
+    api_schema.expand_references!
+
     space.organization.add_user(user)
     space.add_developer(user)
   end
 
   describe 'POST /v3/apps' do
+    let(:create_definition) { app_schema.links.select { |l| l.title == 'Create' }.first }
+
     it 'creates an app' do
       buildpack      = VCAP::CloudController::Buildpack.make
       create_request = {
@@ -32,13 +40,18 @@ RSpec.describe 'Apps' do
             }
           }
         }
-      }
+      }.deep_stringify_keys!
+
+      create_definition.schema.validate!(create_request)
 
       post '/v3/apps', create_request, user_header
       expect(last_response.status).to eq(201)
 
       parsed_response = MultiJson.load(last_response.body)
       app_guid        = parsed_response['guid']
+
+      create_definition.target_schema.validate!(parsed_response)
+      api_schema.validate!(parsed_response)
 
       expect(VCAP::CloudController::AppModel.find(guid: app_guid)).to be
       expect(parsed_response).to be_a_response_like(
@@ -102,12 +115,20 @@ RSpec.describe 'Apps' do
           relationships:         {
             space: { data: { guid: space.guid } }
           }
-        }
+        }.deep_stringify_keys!
+
+        create_definition.schema.validate!(create_request)
 
         post '/v3/apps', create_request.to_json, user_header.merge({ 'CONTENT_TYPE' => 'application/json' })
+        expect(last_response.status).to eq(201)
 
-        created_app       = VCAP::CloudController::AppModel.last
-        expected_response = {
+        parsed_response = MultiJson.load(last_response.body)
+        created_app     = VCAP::CloudController::AppModel.last
+
+        create_definition.target_schema.validate!(parsed_response)
+        api_schema.validate!(parsed_response)
+
+        expect(parsed_response).to be_a_response_like({
           'name'       => 'my_app',
           'guid'       => created_app.guid,
           'state'      => 'STOPPED',
@@ -130,11 +151,7 @@ RSpec.describe 'Apps' do
             'start'                 => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/start", 'method' => 'PUT' },
             'stop'                  => { 'href' => "#{link_prefix}/v3/apps/#{created_app.guid}/stop", 'method' => 'PUT' },
           }
-        }
-
-        parsed_response = MultiJson.load(last_response.body)
-        expect(last_response.status).to eq(201)
-        expect(parsed_response).to be_a_response_like(expected_response)
+        })
 
         event = VCAP::CloudController::Event.last
         expect(event.values).to include({
