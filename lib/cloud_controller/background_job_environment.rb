@@ -11,6 +11,10 @@ class BackgroundJobEnvironment
   def setup_environment
     VCAP::CloudController::DB.load_models(@config.fetch(:db), Steno.logger('cc.background'))
     VCAP::CloudController::Config.configure_components(@config)
+    EM.error_handler do |e|
+      Steno.logger('cc.background_job_environment').error("Error: #{e.message}")
+      EM.stop_event_loop
+    end
 
     Thread.new do
       EM.run do
