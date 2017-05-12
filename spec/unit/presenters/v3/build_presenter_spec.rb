@@ -9,9 +9,11 @@ module VCAP::CloudController::Presenters::V3
     let(:stack) { 'the-happiest-stack' }
     let(:build) do
       VCAP::CloudController::BuildModel.make(
-        state:   VCAP::CloudController::BuildModel::STAGING_STATE,
-        package: package,
-        app:     app
+        state:        VCAP::CloudController::BuildModel::STAGING_STATE,
+        package:      package,
+        app:          app,
+        memory_in_mb: 2000,
+        disk_in_mb:   3000,
       )
     end
     let!(:lifecycle_data) { VCAP::CloudController::BuildpackLifecycleDataModel.make(buildpack: [buildpack], stack: stack, build: build) }
@@ -28,6 +30,9 @@ module VCAP::CloudController::Presenters::V3
           expect(result[:guid]).to eq(build.guid)
           expect(result[:state]).to eq('STAGING')
           expect(result[:error]).to eq(nil)
+
+          expect(result[:memory_in_mb]).to eq(2000)
+          expect(result[:disk_in_mb]).to eq(3000)
 
           expect(result[:lifecycle][:type]).to eq('buildpack')
           expect(result[:lifecycle][:data][:buildpacks]).to eq(['the-happiest-buildpack'])
@@ -72,6 +77,9 @@ module VCAP::CloudController::Presenters::V3
           expect(result[:guid]).to eq(build.guid)
           expect(result[:state]).to eq('STAGING')
           expect(result[:error]).to eq(nil)
+
+          expect(result[:memory_in_mb]).to eq(2000)
+          expect(result[:disk_in_mb]).to eq(3000)
 
           expect(result[:lifecycle][:type]).to eq('docker')
           expect(result[:lifecycle][:data]).to eq({})

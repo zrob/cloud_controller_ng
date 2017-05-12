@@ -39,7 +39,9 @@ module VCAP::CloudController
       build = BuildModel.new(
         state:        BuildModel::STAGING_STATE,
         package_guid: package.guid,
-        app:          package.app
+        app:          package.app,
+        memory_in_mb: staging_details.memory_in_mb,
+        disk_in_mb: staging_details.disk_in_mb,
       )
 
       BuildModel.db.transaction do
@@ -65,8 +67,8 @@ module VCAP::CloudController
       space = package.space
       org   = space.organization
 
-      memory_limit          = get_memory_limit(lifecycle.staging_message.staging_memory_in_mb, space, org)
-      disk_limit            = get_disk_limit(lifecycle.staging_message.staging_disk_in_mb)
+      memory_limit          = get_memory_limit(lifecycle.staging_message.memory_in_mb, space, org)
+      disk_limit            = get_disk_limit(lifecycle.staging_message.disk_in_mb)
       environment_variables = @environment_builder.build(app,
         space,
         lifecycle,
@@ -76,8 +78,8 @@ module VCAP::CloudController
 
       staging_details                       = Diego::StagingDetails.new
       staging_details.package               = package
-      staging_details.staging_memory_in_mb  = memory_limit
-      staging_details.staging_disk_in_mb    = disk_limit
+      staging_details.memory_in_mb          = memory_limit
+      staging_details.disk_in_mb            = disk_limit
       staging_details.environment_variables = environment_variables
       staging_details.lifecycle             = lifecycle
       staging_details.isolation_segment     = IsolationSegmentSelector.for_space(space)

@@ -6,7 +6,15 @@ module VCAP::CloudController
     describe '.create_from_http_request' do
       let(:body) do
         {
-          'package' => { 'guid' => 'package-guid' },
+          'package'              => { 'guid' => 'package-guid' },
+          'memory_in_mb' => 2000,
+          'disk_in_mb'   => 3000,
+          'lifecycle'            => {
+            'type' => 'docker',
+            'data' => {
+              'image' => 'www.example.com/docker_image'
+            }
+          }
         }
       end
 
@@ -15,6 +23,10 @@ module VCAP::CloudController
 
         expect(message).to be_a(BuildCreateMessage)
         expect(message.package_guid).to eq('package-guid')
+        expect(message.memory_in_mb).to eq(2000)
+        expect(message.disk_in_mb).to eq(3000)
+        expect(message.lifecycle_type).to eq('docker')
+        expect(message.lifecycle_data).to eq({image: 'www.example.com/docker_image'})
       end
 
       it 'converts requested keys to symbols' do
@@ -78,6 +90,74 @@ module VCAP::CloudController
 
             expect(message).not_to be_valid
             expect(message.errors[:package_guid]).to include('must be a string')
+          end
+        end
+      end
+
+      context 'memory_in_mb' do
+        context 'when memory_in_mb is not an number' do
+          let(:params) do
+            {
+              memory_in_mb: 'silly string thing',
+              lifecycle: { type: 'buildpack', data: { buildpack: 'java', stack: 'cflinuxfs2' } }
+            }
+          end
+
+          it 'is not valid' do
+            message = BuildCreateMessage.new(params)
+
+            expect(message).not_to be_valid
+            expect(message.errors[:memory_in_mb]).to include('is not a number')
+          end
+        end
+
+        context 'when memory_in_mb is not an integer' do
+          let(:params) do
+            {
+              memory_in_mb: 3.5,
+              lifecycle: { type: 'buildpack', data: { buildpack: 'java', stack: 'cflinuxfs2' } }
+            }
+          end
+
+          it 'is not valid' do
+            message = BuildCreateMessage.new(params)
+
+            expect(message).not_to be_valid
+            expect(message.errors[:memory_in_mb]).to include('must be an integer')
+          end
+        end
+      end
+
+      context 'disk_in_mb' do
+        context 'when disk_in_mb is not an number' do
+          let(:params) do
+            {
+              disk_in_mb: 'not-a-number',
+              lifecycle: { type: 'buildpack', data: { buildpack: 'java', stack: 'cflinuxfs2' } }
+            }
+          end
+
+          it 'is not valid' do
+            message = BuildCreateMessage.new(params)
+
+            expect(message).not_to be_valid
+            expect(message.errors[:disk_in_mb]).to include('is not a number')
+          end
+        end
+
+        context 'when disk_in_mb is not an integer' do
+          let(:params) do
+            {
+              disk_in_mb: 3.5,
+              lifecycle: { type: 'buildpack', data: { buildpack: 'java', stack: 'cflinuxfs2' } }
+            }
+          end
+
+          it 'is not valid' do
+            message = BuildCreateMessage.new(params)
+
+            expect(message).not_to be_valid
+            expect(message.errors[:disk_in_mb]).to include('must be an integer')
           end
         end
       end

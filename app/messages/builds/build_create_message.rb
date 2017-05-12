@@ -4,7 +4,7 @@ require 'messages/lifecycles/buildpack_lifecycle_data_message'
 
 module VCAP::CloudController
   class BuildCreateMessage < BaseMessage
-    ALLOWED_KEYS = [:staging_memory_in_mb, :staging_disk_in_mb, :environment_variables, :lifecycle, :package].freeze
+    ALLOWED_KEYS = [:memory_in_mb, :disk_in_mb, :lifecycle, :package].freeze
 
     attr_accessor(*ALLOWED_KEYS)
     def self.create_from_http_request(body)
@@ -22,6 +22,9 @@ module VCAP::CloudController
       presence: true,
       allow_nil: false,
       guid: true
+
+    validates :memory_in_mb, numericality: { only_integer: true }, allow_nil: true
+    validates :disk_in_mb, numericality: { only_integer: true }, allow_nil: true
 
     validates :lifecycle_type,
       string: true,
@@ -47,14 +50,6 @@ module VCAP::CloudController
 
     def lifecycle_type
       HashUtils.dig(lifecycle, :type)
-    end
-
-    def staging_memory_in_mb
-      nil
-    end
-
-    def staging_disk_in_mb
-      nil
     end
 
     def environment_variables

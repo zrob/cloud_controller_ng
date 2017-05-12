@@ -28,14 +28,16 @@ RSpec.describe 'Builds' do
     end
     let(:create_request) do
       {
-        lifecycle: {
+        lifecycle:    {
           type: 'buildpack',
           data: {
             buildpacks: ['http://github.com/myorg/awesome-buildpack'],
-            stack: 'cflinuxfs2'
+            stack:      'cflinuxfs2'
           },
         },
-        package: {
+        memory_in_mb: 2000,
+        disk_in_mb:   4096,
+        package:      {
           guid: package.guid
         }
       }
@@ -61,6 +63,8 @@ RSpec.describe 'Builds' do
     it 'creates a Builds resource' do
       post '/v3/builds', create_request.to_json, json_headers(developer_headers)
 
+      expect(last_response.status).to eq(201), last_response.body
+
       created_build = VCAP::CloudController::BuildModel.last
 
       expected_response =
@@ -70,6 +74,8 @@ RSpec.describe 'Builds' do
           'updated_at' => iso8601,
           'state' => 'STAGING',
           'error' => nil,
+          'memory_in_mb' => 2000,
+          'disk_in_mb' => 4096,
           'lifecycle' => {
             'type' => 'buildpack',
             'data' => {
@@ -91,13 +97,19 @@ RSpec.describe 'Builds' do
           }
         }
 
-      expect(last_response.status).to eq(201), last_response.body
       expect(parsed_response).to be_a_response_like(expected_response)
     end
   end
 
   describe 'GET /v3/builds' do
-    let(:build) { VCAP::CloudController::BuildModel.make(package: package, app: app_model) }
+    let(:build) do
+      VCAP::CloudController::BuildModel.make(
+        package: package,
+        app: app_model,
+        memory_in_mb: 3000,
+        disk_in_mb: 4096,
+      )
+    end
     let(:package) { VCAP::CloudController::PackageModel.make(app_guid: app_model.guid) }
     let(:droplet) { VCAP::CloudController::DropletModel.make(
       state: VCAP::CloudController::DropletModel::STAGED_STATE,
@@ -127,6 +139,8 @@ RSpec.describe 'Builds' do
           'updated_at' => iso8601,
           'state' => 'STAGED',
           'error' => nil,
+          'memory_in_mb' => 3000,
+          'disk_in_mb' => 4096,
           'lifecycle' => {
             'type' => 'buildpack',
             'data' => {

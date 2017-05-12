@@ -15,6 +15,8 @@ module VCAP::CloudController
               type: build.lifecycle_type,
               data: build.lifecycle_data.to_hash
             },
+            memory_in_mb: build.memory_in_mb,
+            disk_in_mb: build.disk_in_mb,
             package: { guid: build.package_guid },
             droplet: droplet,
             links: build_links,

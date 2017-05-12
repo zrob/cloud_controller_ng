@@ -25,6 +25,8 @@ module VCAP::CloudController
           type: 'buildpack',
           data: lifecycle_data
         },
+        memory_in_mb: memory_in_mb,
+        disk_in_mb: disk_in_mb,
       }.deep_stringify_keys
     end
     let(:lifecycle) { BuildpackLifecycle.new(package, staging_message) }
@@ -46,35 +48,35 @@ module VCAP::CloudController
     let(:stagers) { instance_double(Stagers) }
     let(:stager) { instance_double(Diego::Stager) }
     let(:calculated_mem_limit) { 32 }
-    let(:calculated_staging_disk_in_mb) { 64 }
+    let(:calculated_disk_in_mb) { 64 }
 
-    let(:staging_memory_in_mb) { nil }
-    let(:staging_disk_in_mb) { nil }
+    let(:memory_in_mb) { 2000 }
+    let(:disk_in_mb) { 3000 }
     let(:environment_variables) { 'random string' }
 
     before do
       allow(CloudController::DependencyLocator.instance).to receive(:stagers).and_return(stagers)
       allow(stagers).to receive(:stager_for_app).and_return(stager)
       allow(stager).to receive(:stage)
-      allow(memory_limit_calculator).to receive(:get_limit).with(staging_memory_in_mb, space, org).and_return(calculated_mem_limit)
-      allow(disk_limit_calculator).to receive(:get_limit).with(staging_disk_in_mb).and_return(calculated_staging_disk_in_mb)
+      allow(memory_limit_calculator).to receive(:get_limit).with(memory_in_mb, space, org).and_return(calculated_mem_limit)
+      allow(disk_limit_calculator).to receive(:get_limit).with(disk_in_mb).and_return(calculated_disk_in_mb)
       allow(environment_builder).to receive(:build).and_return(environment_variables)
     end
 
     describe '#create_and_stage' do
-      context 'creating a build and dependent droplet' do
-        it 'creates a build' do
-          build = nil
+      it 'creates a build' do
+        build = nil
 
-          expect {
-            build = action.create_and_stage(package: package, lifecycle: lifecycle)
-          }.to change { BuildModel.count }.by(1)
+        expect {
+          build = action.create_and_stage(package: package, lifecycle: lifecycle)
+        }.to change { BuildModel.count }.by(1)
 
-          expect(build.state).to eq(BuildModel::STAGING_STATE)
-          expect(build.app_guid).to eq(app.guid)
-          expect(build.package_guid).to eq(package.guid)
-          expect(build.lifecycle_data.to_hash).to eq(lifecycle_data)
-        end
+        expect(build.state).to eq(BuildModel::STAGING_STATE)
+        expect(build.app_guid).to eq(app.guid)
+        expect(build.package_guid).to eq(package.guid)
+        expect(build.memory_in_mb).to eq(32)
+        expect(build.disk_in_mb).to eq(64)
+        expect(build.lifecycle_data.to_hash).to eq(lifecycle_data)
       end
 
       describe 'creating a stage request' do
@@ -83,8 +85,8 @@ module VCAP::CloudController
           expect(stager).to have_received(:stage) do |staging_details|
             expect(staging_details.package).to eq(package)
             expect(staging_details.staging_guid).to eq(build.guid)
-            expect(staging_details.staging_memory_in_mb).to eq(calculated_mem_limit)
-            expect(staging_details.staging_disk_in_mb).to eq(calculated_staging_disk_in_mb)
+            expect(staging_details.memory_in_mb).to eq(calculated_mem_limit)
+            expect(staging_details.disk_in_mb).to eq(calculated_disk_in_mb)
             expect(staging_details.environment_variables).to eq(environment_variables)
             expect(staging_details.lifecycle).to eq(lifecycle)
             expect(staging_details.isolation_segment).to be_nil
