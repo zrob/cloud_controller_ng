@@ -311,6 +311,10 @@ module CloudController
       end
     end
 
+    def statsd_updater
+      @dependencies[:statsd_updater] || register(:statsd_updater, build_statsd_updater)
+    end
+
     private
 
     def build_bbs_stager_client
@@ -359,6 +363,12 @@ module CloudController
 
     def build_traffic_controller_client
       TrafficController::Client.new(url: HashUtils.dig(@config, :loggregator, :internal_url))
+    end
+
+    def build_statsd_updater
+      Statsd.logger = Steno.logger('statsd.client')
+      statsd_client = Statsd.new(@config[:statsd_host], @config[:statsd_port].to_i)
+      VCAP::CloudController::Metrics::StatsdUpdater.new(statsd_client)
     end
 
     def create_object_renderer(opts={})

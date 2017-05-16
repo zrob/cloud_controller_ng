@@ -13,6 +13,7 @@ module VCAP::CloudController
       def initialize(config)
         @config   = config
         @workpool = WorkPool.new(50)
+        @mutex    = Mutex.new
       end
 
       def sync
@@ -20,6 +21,7 @@ module VCAP::CloudController
         bump_freshness = true
         diego_lrps     = bbs_apps_client.fetch_scheduling_infos.index_by { |d| d.desired_lrp_key.process_guid }
         logger.info('fetched-scheduling-infos')
+        @invalid_lrps = 0
 
         for_processes do |processes|
           processes.each do |process|
@@ -28,15 +30,19 @@ module VCAP::CloudController
 
             if diego_lrp.nil?
               @workpool.submit(process) do |p|
-                recipe_builder = AppRecipeBuilder.new(config: config, process: p)
-                bbs_apps_client.desire_app(recipe_builder.build_app_lrp)
-                logger.info('desire-lrp', process_guid: p.guid)
+                handle_invalid_requests do
+                  recipe_builder = AppRecipeBuilder.new(config: config, process: p)
+                  bbs_apps_client.desire_app(recipe_builder.build_app_lrp)
+                  logger.info('desire-lrp', process_guid: p.guid)
+                end
               end
             elsif process.updated_at.to_f.to_s != diego_lrp.annotation
               @workpool.submit(process, diego_lrp) do |p, l|
-                recipe_builder = AppRecipeBuilder.new(config: config, process: p)
-                bbs_apps_client.update_app(process_guid, recipe_builder.build_app_lrp_update(l))
-                logger.info('update-lrp', process_guid: p.guid)
+                handle_invalid_requests do
+                  recipe_builder = AppRecipeBuilder.new(config: config, process: p)
+                  bbs_apps_client.update_app(process_guid, recipe_builder.build_app_lrp_update(l))
+                  logger.info('update-lrp', process_guid: p.guid)
+                end
               end
             end
           end
@@ -52,18 +58,15 @@ module VCAP::CloudController
         @workpool.drain
 
       rescue CloudController::Errors::ApiError => e
-        if e.name == 'RunnerInvalidRequest'
-          logger.info('synced-invalid-desired-lrps', error: e.name, error_message: e.message)
-        else
-          logger.info('sync-failed', error: e.name, error_message: e.message)
-          bump_freshness = false
-          raise BBSFetchError.new(e.message)
-        end
+        logger.info('sync-failed', error: e.name, error_message: e.message)
+        bump_freshness = false
+        raise BBSFetchError.new(e.message)
       ensure
         if bump_freshness
           bbs_apps_client.bump_freshness
           logger.info('finished-process-sync')
         end
+        statsd_updater.update_synced_invalid_lrps(@invalid_lrps)
       end
 
       private
@@ -95,8 +98,25 @@ module VCAP::CloudController
         processes.select_all(ProcessModel.table_name)
       end
 
+      def handle_invalid_requests
+        yield
+      rescue CloudController::Errors::ApiError => e
+        if e.name == 'RunnerInvalidRequest'
+          logger.info('synced-invalid-desired-lrps', error: e.name, error_message: e.message)
+          @mutex.synchronize do
+            @invalid_lrps += 1
+          end
+        else
+          raise
+        end
+      end
+
       def bbs_apps_client
         CloudController::DependencyLocator.instance.bbs_apps_client
+      end
+
+      def statsd_updater
+        CloudController::DependencyLocator.instance.statsd_updater
       end
 
       def logger

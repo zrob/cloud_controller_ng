@@ -450,4 +450,10 @@ RSpec.describe CloudController::DependencyLocator do
       expect(locator.instances_reporters).to be_an_instance_of(VCAP::CloudController::InstancesReporters)
     end
   end
+
+  describe '#statsd_updater' do
+    it 'returns the statsd_updater' do
+      expect(locator.statsd_updater).to be_an_instance_of(VCAP::CloudController::Metrics::StatsdUpdater)
+    end
+  end
 end
