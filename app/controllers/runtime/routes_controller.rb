@@ -227,7 +227,7 @@ module VCAP::CloudController
 
       before_update(route)
 
-      app = App.find(guid: request_attrs['app'])
+      app = ProcessModel.find(guid: request_attrs['app'])
       raise CloudController::Errors::ApiError.new_from_details('AppNotFound', app_guid) unless app
 
       begin
@@ -257,7 +257,7 @@ module VCAP::CloudController
 
       before_update(route)
 
-      process = App.find(guid: request_attrs['app'])
+      process = ProcessModel.find(guid: request_attrs['app'])
       raise CloudController::Errors::ApiError.new_from_details('AppNotFound', app_guid) unless process
 
       route_mapping = RouteMappingModel.find(app: process.app, route: route, process: process)

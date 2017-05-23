@@ -28,7 +28,7 @@ module VCAP::CloudController
       def process_droplet_exited_message(decoded_message)
         app_guid = decoded_message['droplet']
 
-        app = App[guid: app_guid]
+        app = ProcessModel[guid: app_guid]
 
         if app && crashed_app?(decoded_message)
           Repositories::AppEventRepository.new.create_app_exit_event(app, decoded_message)

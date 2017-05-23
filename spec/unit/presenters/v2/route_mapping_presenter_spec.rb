@@ -36,7 +36,7 @@ module CloudController::Presenters::V2
 
       context 'dea app' do
         before do
-          VCAP::CloudController::App.make(app: app, type: 'web', diego: false)
+          VCAP::CloudController::ProcessModel.make(app: app, type: 'web', diego: false)
         end
 
         it 'presents the app_port as nil' do

@@ -396,7 +396,7 @@ RSpec.describe 'Apps' do
 
       post '/v2/apps', post_params, headers_for(user)
 
-      process = VCAP::CloudController::App.last
+      process = VCAP::CloudController::ProcessModel.last
       expect(last_response.status).to eq(201)
       expect(MultiJson.load(last_response.body)).to be_a_response_like(
         {
@@ -463,7 +463,7 @@ RSpec.describe 'Apps' do
 
         post '/v2/apps', post_params, headers_for(user)
 
-        process = VCAP::CloudController::App.last
+        process = VCAP::CloudController::ProcessModel.last
         expect(last_response.status).to eq(201)
         expect(MultiJson.load(last_response.body)).to be_a_response_like(
           {

@@ -73,7 +73,7 @@ module VCAP::CloudController
 
       def port_with_defaults
         port = requested_port
-        port ||= App::DEFAULT_HTTP_PORT if !app.docker?
+        port ||= ProcessModel::DEFAULT_HTTP_PORT if !app.docker?
         port
       end
 

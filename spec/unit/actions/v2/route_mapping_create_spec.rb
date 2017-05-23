@@ -10,7 +10,7 @@ module VCAP::CloudController
       let(:user_guid) { 'user-guid' }
       let(:user_email) { '1@2.3' }
       let(:user_audit_info) { UserAuditInfo.new(user_email: user_email, user_guid: user_guid) }
-      let(:process) { App.make(:process, app: app, type: process_type, ports: ports, health_check_type: 'none') }
+      let(:process) { ProcessModel.make(:process, app: app, type: process_type, ports: ports, health_check_type: 'none') }
       let(:process_type) { 'web' }
       let(:ports) { [8888] }
       let(:requested_port) { 8888 }
@@ -64,7 +64,7 @@ module VCAP::CloudController
 
               it 'uses the default port' do
                 route_mapping = route_mapping_create.add
-                expect(route_mapping.app_port).to eq(App::DEFAULT_HTTP_PORT)
+                expect(route_mapping.app_port).to eq(ProcessModel::DEFAULT_HTTP_PORT)
               end
             end
           end
@@ -110,7 +110,7 @@ module VCAP::CloudController
           let(:process_type) { 'web' }
 
           context 'dea' do
-            let(:process) { App.make(diego: false, app: app, type: process_type, health_check_type: 'none') }
+            let(:process) { ProcessModel.make(diego: false, app: app, type: process_type, health_check_type: 'none') }
 
             context 'not requesting a port' do
               let(:request_attrs) { {} }
@@ -131,7 +131,7 @@ module VCAP::CloudController
           end
 
           context 'diego' do
-            let(:process) { App.make(diego: true, app: app, type: process_type, ports: [1234, 5678], health_check_type: 'none') }
+            let(:process) { ProcessModel.make(diego: true, app: app, type: process_type, ports: [1234, 5678], health_check_type: 'none') }
 
             context 'requesting available port' do
               let(:requested_port) { 5678 }
@@ -236,7 +236,7 @@ module VCAP::CloudController
           end
 
           context 'for a different process type' do
-            let(:worker_process) { App.make(:process, app: app, type: 'worker', ports: [8888]) }
+            let(:worker_process) { ProcessModel.make(:process, app: app, type: 'worker', ports: [8888]) }
 
             it 'allows a new route mapping' do
               RouteMappingCreate.new(user_audit_info, route, worker_process, request_attrs).add

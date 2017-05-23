@@ -222,7 +222,7 @@ module VCAP::CloudController
             # fake out the app refresh as the race happens after it
             allow(app).to receive(:refresh)
 
-            other_app_ref         = App.find(guid: app.guid)
+            other_app_ref         = ProcessModel.find(guid: app.guid)
             other_app_ref.command = 'some other command'
             other_app_ref.save
 
@@ -722,7 +722,7 @@ module VCAP::CloudController
               # fake out the app refresh as the race happens after it
               allow(app).to receive(:refresh)
 
-              other_app_ref         = App.find(guid: app.guid)
+              other_app_ref         = ProcessModel.find(guid: app.guid)
               other_app_ref.command = 'some other command'
               other_app_ref.save
 

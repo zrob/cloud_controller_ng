@@ -35,7 +35,7 @@ module VCAP::CloudController
 
     def save_app(changes, undo_changes)
       finder = app.pk_hash.merge(date_trunc_clause(changes[:updated_at]))
-      count = App.dataset.where(finder).update(undo_changes)
+      count = ProcessModel.dataset.where(finder).update(undo_changes)
       app.refresh
       logger.warn('app.rollback.failed', guid: app.guid, self: app.inspect, to: undo_changes) if count == 0
       count == 1
@@ -47,9 +47,9 @@ module VCAP::CloudController
 
     def date_trunc_clause(updated_at)
       return {} unless updated_at && updated_at[1]
-      if App.db.database_type == :postgres
+      if ProcessModel.db.database_type == :postgres
         { Sequel.lit("date_trunc('second', updated_at)") => updated_at[1].change(usec: 0) }
-      elsif App.db.database_type == :mysql
+      elsif ProcessModel.db.database_type == :mysql
         { Sequel.lit('UNIX_TIMESTAMP(updated_at)') => updated_at[1].to_i }
       else
         {}
