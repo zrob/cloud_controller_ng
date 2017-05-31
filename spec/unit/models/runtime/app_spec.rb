@@ -221,21 +221,21 @@ module VCAP::CloudController
         let(:app) { App.make }
 
         it 'does allow nil value' do
-          app.app.lifecycle_data.update(buildpack: nil)
+          app.app.lifecycle_data.update(buildpack_identifier: nil)
           expect {
             app.save
           }.to_not raise_error
         end
 
         it 'does allow a public url' do
-          app.app.lifecycle_data.update(buildpack: 'git://user@github.com/repo.git')
+          app.app.lifecycle_data.update(buildpack_identifier: 'git://user@github.com/repo.git')
           expect {
             app.save
           }.to_not raise_error
         end
 
         it 'allows a public http url' do
-          app.app.lifecycle_data.update(buildpack: 'http://example.com/foo')
+          app.app.lifecycle_data.update(buildpack_identifier: 'http://example.com/foo')
           expect {
             app.save
           }.to_not raise_error
@@ -243,7 +243,7 @@ module VCAP::CloudController
 
         it 'allows a buildpack name' do
           admin_buildpack = Buildpack.make
-          app.app.lifecycle_data.update(buildpack: admin_buildpack.name)
+          app.app.lifecycle_data.update(buildpack_identifier: admin_buildpack.name)
           expect {
             app.save
           }.to_not raise_error
@@ -252,7 +252,7 @@ module VCAP::CloudController
         end
 
         it 'does not allow a non-url string' do
-          app.app.lifecycle_data.update(buildpack: 'Hello, world!')
+          app.app.lifecycle_data.update(buildpack_identifier: 'Hello, world!')
           expect {
             app.save
           }.to raise_error(Sequel::ValidationFailed, /is not valid public url or a known buildpack name/)
@@ -860,14 +860,14 @@ module VCAP::CloudController
       let(:app) { App.make(app: parent_app) }
       context 'when a custom buildpack is associated with the app' do
         it 'should be the custom url' do
-          app.app.lifecycle_data.update(buildpack: 'https://example.com/repo.git')
+          app.app.lifecycle_data.update(buildpack_identifier: 'https://example.com/repo.git')
           expect(app.custom_buildpack_url).to eq('https://example.com/repo.git')
         end
       end
 
       context 'when an admin buildpack is associated with the app' do
         it 'should be nil' do
-          app.app.lifecycle_data.update(buildpack: Buildpack.make.name)
+          app.app.lifecycle_data.update(buildpack_identifier: Buildpack.make.name)
           expect(app.custom_buildpack_url).to be_nil
         end
       end
@@ -1456,7 +1456,7 @@ module VCAP::CloudController
       context 'when a custom buildpack was used for staging' do
         it 'creates an AppUsageEvent that contains the custom buildpack url' do
           app = AppFactory.make(state: 'STOPPED')
-          app.app.lifecycle_data.update(buildpack: 'https://example.com/repo.git')
+          app.app.lifecycle_data.update(buildpack_identifier: 'https://example.com/repo.git')
           expect {
             app.update(state: 'STARTED')
           }.to change { AppUsageEvent.count }.by(1)
@@ -1532,7 +1532,7 @@ module VCAP::CloudController
       subject(:app) { AppFactory.make(app: parent_app) }
 
       it 'does not allow a docker package for a buildpack app' do
-        app.app.lifecycle_data.update(buildpack: Buildpack.make.name)
+        app.app.lifecycle_data.update(buildpack_identifier: Buildpack.make.name)
         PackageModel.make(:docker, app: app.app)
         expect {
           app.save

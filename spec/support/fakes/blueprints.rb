@@ -395,7 +395,7 @@ module VCAP::CloudController
   end
 
   BuildpackLifecycleDataModel.blueprint do
-    buildpack { nil }
+    buildpack_identifier { nil }
     stack { Stack.make.name }
   end
 

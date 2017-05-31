@@ -17,7 +17,7 @@ RSpec.describe DropletsController, type: :controller do
       allow_user_write_access(user, space: space)
       allow(CloudController::DependencyLocator.instance).to receive(:stagers).and_return(stagers)
       allow(stagers).to receive(:stager_for_app).and_return(double(:stager, stage: nil))
-      app_model.lifecycle_data.update(buildpack: nil, stack: VCAP::CloudController::Stack.default.name)
+      app_model.lifecycle_data.update(buildpack_identifier: nil, stack: VCAP::CloudController::Stack.default.name)
     end
   end
 

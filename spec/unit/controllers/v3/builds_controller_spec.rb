@@ -24,7 +24,7 @@ RSpec.describe BuildsController, type: :controller do
     before do
       allow(CloudController::DependencyLocator.instance).to receive(:stagers).and_return(stagers)
       allow(stagers).to receive(:stager_for_app).and_return(double(:stager, stage: nil))
-      app_model.lifecycle_data.update(buildpack: nil, stack: VCAP::CloudController::Stack.default.name)
+      app_model.lifecycle_data.update(buildpack_identifier: nil, stack: VCAP::CloudController::Stack.default.name)
       set_current_user_as_admin
     end
 
@@ -107,7 +107,7 @@ RSpec.describe BuildsController, type: :controller do
             post :create, body: req_body
 
             expect(response.status).to eq(201)
-            expect(VCAP::CloudController::BuildModel.last.lifecycle_data.buildpack).to eq('http://dan-and-zach-awesome-pack.com')
+            expect(VCAP::CloudController::BuildModel.last.lifecycle_data.buildpack_identifier).to eq('http://dan-and-zach-awesome-pack.com')
           end
 
           context 'when the url is invalid' do
@@ -129,7 +129,7 @@ RSpec.describe BuildsController, type: :controller do
             post :create, body: req_body
 
             expect(response.status).to eq(201)
-            expect(VCAP::CloudController::BuildModel.last.buildpack_lifecycle_data.buildpack).to eq(buildpack.name)
+            expect(VCAP::CloudController::BuildModel.last.buildpack_lifecycle_data.buildpack_identifier).to eq(buildpack.name)
           end
 
           context 'when the buildpack does not exist' do
@@ -159,7 +159,7 @@ RSpec.describe BuildsController, type: :controller do
             post :create, body: req_body
 
             expect(response.status).to eq(201)
-            expect(VCAP::CloudController::BuildModel.last.lifecycle_data.buildpack).to be_nil
+            expect(VCAP::CloudController::BuildModel.last.lifecycle_data.buildpack_identifier).to be_nil
           end
         end
 
@@ -178,7 +178,7 @@ RSpec.describe BuildsController, type: :controller do
             post :create, body: req_body
 
             expect(response.status).to eq(201)
-            expect(VCAP::CloudController::BuildModel.last.lifecycle_data.buildpack).to be_nil
+            expect(VCAP::CloudController::BuildModel.last.lifecycle_data.buildpack_identifier).to be_nil
           end
         end
       end
@@ -193,14 +193,16 @@ RSpec.describe BuildsController, type: :controller do
         end
         context 'when app has a buildpack' do
           before do
-            app_model.lifecycle_data.update(buildpack: buildpack.name)
+            app_model.lifecycle_data.update(buildpack_identifier: buildpack.name)
           end
 
           it 'uses the apps buildpack' do
             post :create, body: req_body_without_lifecycle
 
             expect(response.status).to eq(201)
-            expect(VCAP::CloudController::BuildModel.last.lifecycle_data.buildpack).to eq(app_model.lifecycle_data.buildpack)
+
+            new_build = VCAP::CloudController::BuildModel.last
+            expect(new_build.lifecycle_data.buildpack_identifier).to eq(app_model.lifecycle_data.buildpack_identifier)
           end
         end
       end

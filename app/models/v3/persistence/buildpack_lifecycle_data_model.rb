@@ -25,33 +25,35 @@ module VCAP::CloudController
       primary_key:             :guid,
       without_guid_generation: true
 
-    def buildpack=(buildpack)
+    def buildpack_identifier=(buildpack_identifier)
       self.buildpack_url        = nil
       self.admin_buildpack_name = nil
 
-      if UriUtils.is_uri?(buildpack)
-        self.buildpack_url = buildpack
+      if UriUtils.is_uri?(buildpack_identifier)
+        self.buildpack_url = buildpack_identifier
       else
-        self.admin_buildpack_name = buildpack
+        self.admin_buildpack_name = buildpack_identifier
       end
     end
+    # alias_method :buildpack=, :buildpack_identifier=
 
-    def buildpack
+    def buildpack_identifier
       return self.admin_buildpack_name if self.admin_buildpack_name.present?
       self.buildpack_url
     end
+    # alias_method :buildpack, :buildpack_identifier
 
     def buildpack_model
-      return AutoDetectionBuildpack.new if buildpack.nil?
+      return AutoDetectionBuildpack.new if buildpack_identifier.nil?
 
-      known_buildpack = Buildpack.find(name: buildpack)
+      known_buildpack = Buildpack.find(name: buildpack_identifier)
       return known_buildpack if known_buildpack
 
-      CustomBuildpack.new(buildpack)
+      CustomBuildpack.new(buildpack_identifier)
     end
 
     def to_hash
-      { buildpacks: buildpack ? [CloudController::UrlSecretObfuscator.obfuscate(buildpack)] : [], stack: stack }
+      { buildpacks: buildpack_identifier ? [CloudController::UrlSecretObfuscator.obfuscate(buildpack_identifier)] : [], stack: stack }
     end
 
     def validate

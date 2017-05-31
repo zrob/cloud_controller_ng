@@ -79,7 +79,7 @@ module VCAP::CloudController
 
         if build.lifecycle_type == Lifecycles::BUILDPACK
           opts[:buildpack_guid] = build.droplet&.buildpack_receipt_buildpack_guid
-          opts[:buildpack_name] = CloudController::UrlSecretObfuscator.obfuscate(build.droplet&.buildpack_receipt_buildpack || build.lifecycle_data.buildpack)
+          opts[:buildpack_name] = CloudController::UrlSecretObfuscator.obfuscate(build.droplet&.buildpack_receipt_buildpack || build.lifecycle_data.buildpack_identifier)
         end
         AppUsageEvent.create(opts)
       end

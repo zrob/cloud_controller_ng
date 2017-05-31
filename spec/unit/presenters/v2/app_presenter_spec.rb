@@ -37,7 +37,7 @@ module CloudController::Presenters::V2
 
       before do
         app.app.lifecycle_data.update(
-          buildpack: buildpack
+          buildpack_identifier: buildpack
         )
         app.current_droplet.update(
           buildpack_receipt_detect_output:  'detected buildpack',

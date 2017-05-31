@@ -16,7 +16,7 @@ module VCAP::CloudController
 
     def create_lifecycle_data_model(app)
       BuildpackLifecycleDataModel.create(
-        buildpack: buildpack,
+        buildpack_identifier: buildpack,
         stack:     stack,
         app:       app
       )
@@ -26,7 +26,7 @@ module VCAP::CloudController
       should_save = false
       if message.buildpack_data.requested?(:buildpacks)
         should_save = true
-        app.lifecycle_data.buildpack = buildpack
+        app.lifecycle_data.buildpack_identifier = buildpack
       end
       if message.buildpack_data.requested?(:stack)
         should_save = true

@@ -237,7 +237,7 @@ module VCAP::CloudController
           before do
             VCAP::CloudController::BuildpackLifecycleDataModel.make(
               app:       app_model,
-              buildpack: nil,
+              buildpack_identifier: nil,
               stack:     'potato-stack',
             )
 

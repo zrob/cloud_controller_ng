@@ -19,12 +19,12 @@ module VCAP::CloudController
       end
     end
 
-    describe '#buildpack' do
+    describe '#buildpack_identifier' do
       context 'url' do
         it 'persists the buildpack' do
-          lifecycle_data.buildpack = 'http://buildpack.example.com'
+          lifecycle_data.buildpack_identifier = 'http://buildpack.example.com'
           lifecycle_data.save
-          expect(lifecycle_data.reload.buildpack).to eq 'http://buildpack.example.com'
+          expect(lifecycle_data.reload.buildpack_identifier).to eq 'http://buildpack.example.com'
           expect(lifecycle_data.reload.buildpack_url).to eq 'http://buildpack.example.com'
         end
       end
@@ -33,9 +33,9 @@ module VCAP::CloudController
         let(:buildpack) { Buildpack.make(name: 'ruby') }
 
         it 'persists the buildpack' do
-          lifecycle_data.buildpack = 'ruby'
+          lifecycle_data.buildpack_identifier = 'ruby'
           lifecycle_data.save
-          expect(lifecycle_data.reload.buildpack).to eq 'ruby'
+          expect(lifecycle_data.reload.buildpack_identifier).to eq 'ruby'
           expect(lifecycle_data.reload.admin_buildpack_name).to eq 'ruby'
         end
       end
@@ -45,7 +45,7 @@ module VCAP::CloudController
       let!(:admin_buildpack) { Buildpack.make(name: 'bob') }
 
       context 'when the buildpack is nil' do
-        subject(:lifecycle_data) { BuildpackLifecycleDataModel.new(buildpack: nil) }
+        subject(:lifecycle_data) { BuildpackLifecycleDataModel.new(buildpack_identifier: nil) }
 
         it 'is AutoDetectionBuildpack' do
           expect(lifecycle_data.buildpack_model).to be_an(AutoDetectionBuildpack)
@@ -53,7 +53,7 @@ module VCAP::CloudController
       end
 
       context 'when the buildpack is an admin buildpack' do
-        subject(:lifecycle_data) { BuildpackLifecycleDataModel.new(buildpack: admin_buildpack.name) }
+        subject(:lifecycle_data) { BuildpackLifecycleDataModel.new(buildpack_identifier: admin_buildpack.name) }
 
         it 'is the matching admin buildpack' do
           expect(lifecycle_data.buildpack_model).to eq(admin_buildpack)
@@ -62,7 +62,7 @@ module VCAP::CloudController
 
       context 'when the buildpack is a custom buildpack (url)' do
         let(:custom_buildpack_url) { 'https://github.com/buildpacks/the-best' }
-        subject(:lifecycle_data) { BuildpackLifecycleDataModel.new(buildpack: custom_buildpack_url) }
+        subject(:lifecycle_data) { BuildpackLifecycleDataModel.new(buildpack_identifier: custom_buildpack_url) }
 
         it 'is a custom buildpack for the URL' do
           buildpack_model = lifecycle_data.buildpack_model
@@ -81,7 +81,7 @@ module VCAP::CloudController
 
       before do
         lifecycle_data.stack = stack
-        lifecycle_data.buildpack = buildpack
+        lifecycle_data.buildpack_identifier = buildpack
         lifecycle_data.save
       end
 

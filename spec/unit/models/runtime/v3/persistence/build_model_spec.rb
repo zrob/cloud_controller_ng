@@ -51,7 +51,7 @@ module VCAP::CloudController
       end
 
       it 'is a persistable hash' do
-        expect(build_model.reload.lifecycle_data.buildpack).to eq(lifecycle_data.buildpack)
+        expect(build_model.reload.lifecycle_data.buildpack_identifier).to eq(lifecycle_data.buildpack)
         expect(build_model.reload.lifecycle_data.stack).to eq(lifecycle_data.stack)
       end
 

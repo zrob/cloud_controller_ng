@@ -17,7 +17,7 @@ module VCAP::CloudController
       )
     end
     let(:build) { BuildModel.make(app: app.app, package: app.latest_package, state: BuildModel::STAGING_STATE) }
-    let!(:lifecycle_data) { VCAP::CloudController::BuildpackLifecycleDataModel.make(build: build, buildpack: 'yoloswag') }
+    let!(:lifecycle_data) { VCAP::CloudController::BuildpackLifecycleDataModel.make(build: build, buildpack_identifier: 'yoloswag') }
     let!(:droplet) { DropletModel.make(app: app.app, build: build, package: app.latest_package, state: DropletModel::STAGING_STATE) }
 
     let(:dea_advertisement) { Dea::NatsMessages::DeaAdvertisement.new({ 'id' => 'my_stager' }, nil) }
@@ -705,7 +705,7 @@ module VCAP::CloudController
               let(:admin_buildpack) { Buildpack.make(name: 'buildpack-name') }
               let(:buildpack_key) { admin_buildpack.key }
               before do
-                app.app.lifecycle_data.update(buildpack: admin_buildpack.name)
+                app.app.lifecycle_data.update(buildpack_identifier: admin_buildpack.name)
                 allow(AdminBuildpacksPresenter).to receive(:enabled_buildpacks)
               end
 
@@ -753,7 +753,7 @@ module VCAP::CloudController
                 stage
               }.to change { AppUsageEvent.where(state: 'BUILDPACK_SET').count }.to(2).from(0)
               usage_event = AppUsageEvent.where(state: 'BUILDPACK_SET').last
-              expect(usage_event.buildpack_name).to eq(build.lifecycle_data.buildpack)
+              expect(usage_event.buildpack_name).to eq(build.lifecycle_data.buildpack_identifier)
             end
           end
 

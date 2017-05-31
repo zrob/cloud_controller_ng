@@ -227,7 +227,7 @@ module VCAP::CloudController
           droplet.set_buildpack_receipt(
             detect_output: stager_response.detected_buildpack,
             buildpack_key: stager_response.buildpack_key,
-            requested_buildpack: build.lifecycle_data.buildpack,
+            requested_buildpack: build.lifecycle_data.buildpack_identifier,
           )
 
           build.save_changes(raise_on_save_failure: true)

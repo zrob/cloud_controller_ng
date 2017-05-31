@@ -73,7 +73,7 @@ module VCAP::CloudController
           # it is important to create the lifecycle model with the app instead of doing app.buildpack_lifecycle_data_model = x
           # because mysql will deadlock when requests happen concurrently otherwise.
           BuildpackLifecycleDataModel.create(
-            buildpack: request_attrs['buildpack'],
+            buildpack_identifier: request_attrs['buildpack'],
             stack:     get_stack_name(request_attrs['stack_guid']),
             app:       app
           )

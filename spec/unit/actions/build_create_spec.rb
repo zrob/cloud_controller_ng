@@ -274,8 +274,8 @@ module VCAP::CloudController
           context 'when the custom buildpack is inherited from the app' do
             let!(:app_lifecycle_data_model) do
               BuildpackLifecycleDataModel.make(
-                buildpack: 'http://example.com/repo.git',
-                app:       app
+                buildpack_identifier: 'http://example.com/repo.git',
+                app:                  app
               )
             end
 
@@ -322,8 +322,8 @@ module VCAP::CloudController
           context 'when the custom buildpack is inherited from the app' do
             let!(:app_lifecycle_data_model) do
               BuildpackLifecycleDataModel.make(
-                buildpack: 'http://example.com/repo.git',
-                app:       app
+                buildpack_identifier: 'http://example.com/repo.git',
+                app:                  app
               )
             end
 

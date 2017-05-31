@@ -66,7 +66,7 @@ module VCAP::CloudController
         expect(app.environment_variables).to eq({ 'KEY' => 'val' })
         expect(app.lifecycle_type).to eq(BuildpackLifecycleDataModel::LIFECYCLE_TYPE)
         expect(app.lifecycle_data.stack).to eq('stack-name')
-        expect(app.lifecycle_data.buildpack).to eq('http://example.com/buildpack')
+        expect(app.lifecycle_data.buildpack_identifier).to eq('http://example.com/buildpack')
       end
 
       context 'when custom buildpacks are disabled' do

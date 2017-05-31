@@ -55,7 +55,7 @@ module VCAP::CloudController
 
       context 'when app does not have buildpack' do
         it 'returns nil for buildpack' do
-          app.app.lifecycle_data.update(buildpack: nil)
+          app.app.lifecycle_data.update(buildpack_identifier: nil)
           request = staging_message.staging_request(app, task_id)
           expect(request[:properties][:buildpack]).to be_nil
         end
@@ -63,14 +63,14 @@ module VCAP::CloudController
 
       context 'when app has a buildpack' do
         it 'returns url for buildpack' do
-          app.app.lifecycle_data.update(buildpack: 'git://example.com/foo.git')
+          app.app.lifecycle_data.update(buildpack_identifier: 'git://example.com/foo.git')
           request = staging_message.staging_request(app, task_id)
           expect(request[:properties][:buildpack]).to eq('git://example.com/foo.git')
           expect(request[:properties][:buildpack_git_url]).to eq('git://example.com/foo.git')
         end
 
         it "doesn't return a buildpack key" do
-          app.app.lifecycle_data.update(buildpack: 'git://example.com/foo.git')
+          app.app.lifecycle_data.update(buildpack_identifier: 'git://example.com/foo.git')
           request = staging_message.staging_request(app, task_id)
           expect(request[:properties]).to_not have_key(:buildpack_key)
         end
@@ -130,7 +130,7 @@ module VCAP::CloudController
 
         context 'when a specific buildpack is requested' do
           before do
-            app.app.lifecycle_data.update(buildpack: Buildpack.first.name)
+            app.app.lifecycle_data.update(buildpack_identifier: Buildpack.first.name)
           end
 
           it "includes a list of admin buildpacks so that the system doesn't think the buildpacks are gone" do
@@ -168,7 +168,7 @@ module VCAP::CloudController
         allow(AdminBuildpacksPresenter).to receive(:enabled_buildpacks)
 
         buildpack = Buildpack.make
-        app.app.lifecycle_data.update(buildpack: buildpack.name)
+        app.app.lifecycle_data.update(buildpack_identifier: buildpack.name)
 
         request = staging_message.staging_request(app, task_id)
         expect(request[:properties][:buildpack_key]).to eql buildpack.key
@@ -177,7 +177,7 @@ module VCAP::CloudController
       it "doesn't include the custom buildpack url keys when the app has a buildpack specified" do
         allow(AdminBuildpacksPresenter).to receive(:enabled_buildpacks)
         buildpack = Buildpack.make
-        app.app.lifecycle_data.update(buildpack: buildpack.name)
+        app.app.lifecycle_data.update(buildpack_identifier: buildpack.name)
 
         request = staging_message.staging_request(app, task_id)
         expect(request[:properties]).to_not have_key(:buildpack)

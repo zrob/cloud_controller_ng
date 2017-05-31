@@ -35,7 +35,7 @@ module VCAP::CloudController
         expect(v3_app.environment_variables).to eq({ 'KEY' => 'val' })
         expect(v3_app.lifecycle_type).to eq(BuildpackLifecycleDataModel::LIFECYCLE_TYPE)
         expect(v3_app.lifecycle_data.stack).to eq('stacks-on-stacks')
-        expect(v3_app.lifecycle_data.buildpack).to eq('http://example.com/buildpack')
+        expect(v3_app.lifecycle_data.buildpack_identifier).to eq('http://example.com/buildpack')
         expect(v3_app.desired_state).to eq(v2_app.state)
 
         expect(v3_app.guid).to eq(v2_app.guid)
