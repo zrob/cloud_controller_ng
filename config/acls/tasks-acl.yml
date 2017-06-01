@@ -1,0 +1,65 @@
+---
+acls:
+  aakash:
+    foundation_id: 'cf1'
+    statements:
+      - action: 'task.read'
+        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/my-app-name'
+      - action: 'app.see_secrets'
+        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/my-app-name'
+  jen:
+    foundation_id: 'cf1'
+    statements:
+      - action: 'task.read'
+        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/*'
+      - action: 'app.see_secrets'
+        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/*'
+  sree:
+    foundation_id: 'cf1'
+    statements:
+      - action: 'task.read'
+        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/*'
+      - action: 'app.see_secrets'
+        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/*'
+  zach:
+    foundation_id: 'cf1'
+    statements:
+      - action: 'task.read'
+        resource: 'app:*'
+      - action: 'app.see_secrets'
+        resource: 'app:*'
+
+resource_types:
+  - name: task
+    actions: [task.read, task.delete]
+  - name: app
+    actions: [app.read, app.delete, app.update, task.create]
+  - name: space
+    actions: [space.read, space.delete, space.update, app.list, app.create]
+  - name: org
+    actions: [org.read, org.delete, org.update, space.create]
+  - name:
+
+
+# Attempt at representing a SpaceDeveloper for "foo-space"
+SpaceDeveloper:
+  - resource: urn:cf1:cloud_controller:space:org-guid/foo-space
+    actions: [space.read, space.update, app.list, app.create]
+  - resource: urn:cf1:cloud_controller:app:org-guid/space-guid/*
+    actions: [app.read, app.delete, app.update...]
+
+  # How would you add app.update to the above? You don't know what will be in there
+  # Random idea: what if we did path style identification of nested resources?
+   # example: urn:cf1:cloud_controller:app:org-guid/space-guid/app-guid
+   # this allows wildcarding in a different manner: urn:cf1:cloud_controller:app:org-guid/space-guid/*
+
+Jen:
+  - resource: urn:cf1:cloud_controller:space:org-guid/foo-space
+    actions: [space.read]
+Aakash:
+  - resource: urn:cf1:cloud_controller:org:org-guid
+    actions: [org.read]
+Admin:
+  - resource: urn:cf1:cloud_controller:task:*
+  - resource: urn:cf1:cloud_controller:org:*
+  - resource: urn:cf1:cloud_controller:space:*

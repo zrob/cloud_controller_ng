@@ -12,7 +12,17 @@ require 'controllers/v3/mixins/sub_resource'
 class TasksController < ApplicationController
   include SubResource
 
+  class AclFilepathFetcher
+    def self.tasks
+      File.join('config', 'acls', 'tasks-acl.yml')
+    end
+  end
+
   def index
+    all_user_acls = YAML.load_file(AclFilepathFetcher.tasks).deep_symbolize_keys
+    acl = VCAP::CloudController::ACL.new(all_user_acls[:acls][SecurityContext.current_user_name.to_sym])
+    authz = VCAP::CloudController::Authz.new(acl)
+
     message = TasksListMessage.from_params(subresource_query_params)
     invalid_param!(message.errors.full_messages) unless message.valid?
 
@@ -20,8 +30,8 @@ class TasksController < ApplicationController
 
     if app_nested?
       app, dataset = TaskListFetcher.new.fetch_for_app(message: message)
-      app_not_found! unless app && can_read?(app.space.guid, app.organization.guid)
-      show_secrets = can_see_secrets?(app.space)
+      app_not_found! unless app && authz.can_do?(app, 'task.read')
+      show_secrets = authz.can_do?(app, 'app.see_secrets')
     else
       dataset = if can_read_globally?
                   TaskListFetcher.new.fetch_all(message: message)

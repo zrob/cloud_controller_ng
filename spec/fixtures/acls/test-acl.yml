@@ -1,0 +1,14 @@
+---
+acls:
+  test-user:
+    foundation_id: 'cf1'
+    statements:
+      - action: 'task.read'
+        resource: 'app:*'
+      - action: 'app.see_secrets'
+        resource: 'app:*'
+  test-user-only-task-read:
+    foundation_id: 'cf1'
+    statements:
+      - action: 'task.read'
+        resource: 'app:*'

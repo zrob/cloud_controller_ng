@@ -303,7 +303,7 @@ RSpec.describe TasksController, type: :controller do
   end
 
   describe '#index' do
-    let(:user) { set_current_user(VCAP::CloudController::User.make) }
+    let(:user) { set_current_user(VCAP::CloudController::User.make, user_name: 'test-user') }
 
     before do
       allow_user_read_access_for(user, spaces: [space])
@@ -346,7 +346,7 @@ RSpec.describe TasksController, type: :controller do
 
     context 'when accessed as an app subresource' do
       before do
-        allow_user_secret_access(user, space: space)
+        allow(TasksController::AclFilepathFetcher).to receive(:tasks).and_return(File.join('spec', 'fixtures', 'acls', 'test-acl.yml'))
       end
 
       it 'uses the app as a filter' do
@@ -368,9 +368,7 @@ RSpec.describe TasksController, type: :controller do
       end
 
       context 'when the user cannot view secrets' do
-        before do
-          disallow_user_secret_access(user, space: space)
-        end
+        let(:user) { set_current_user(VCAP::CloudController::User.make, user_name: 'test-user-only-task-read') }
 
         it 'excludes secrets' do
           VCAP::CloudController::TaskModel.make(app: app_model)
@@ -391,9 +389,7 @@ RSpec.describe TasksController, type: :controller do
       end
 
       context 'when the user does not have permissions to read the app' do
-        before do
-          disallow_user_read_access(user, space: space)
-        end
+        let(:user) { set_current_user(VCAP::CloudController::User.make, user_name: 'foobar') }
 
         it 'returns a 404 Resource Not Found error' do
           get :index, app_guid: app_model.guid

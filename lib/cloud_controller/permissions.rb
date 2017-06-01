@@ -25,8 +25,12 @@ class VCAP::CloudController::Permissions
     @user = user
   end
 
+  def is_admin?
+    roles.admin? || roles.admin_read_only?
+  end
+
   def can_read_globally?
-    roles.admin? || roles.admin_read_only? || roles.global_auditor?
+    is_admin? || roles.global_auditor?
   end
 
   def can_read_from_org?(org_guid)
@@ -44,8 +48,7 @@ class VCAP::CloudController::Permissions
   end
 
   def can_see_secrets_in_space?(space_guid, org_guid)
-    roles.admin? || roles.admin_read_only? ||
-      membership.has_any_roles?(ROLES_FOR_SECRETS, space_guid, org_guid)
+    is_admin? || membership.has_any_roles?(ROLES_FOR_SECRETS, space_guid, org_guid)
   end
 
   def can_write_to_space?(space_guid)

@@ -90,6 +90,10 @@ class ApplicationController < ActionController::Base
   ### PERMISSIONS
   ###
 
+  def is_admin?
+    VCAP::CloudController::Permissions.new(current_user).is_admin?
+  end
+
   def can_read?(space_guid, org_guid)
     VCAP::CloudController::Permissions.new(current_user).can_read_from_space?(space_guid, org_guid)
   end
