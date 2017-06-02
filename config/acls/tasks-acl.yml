@@ -4,9 +4,9 @@ acls:
     foundation_id: 'cf1'
     statements:
       - action: 'task.read'
-        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/my-app-name'
+        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/fbdb27a8-489b-4252-8736-cd237f17ba8b'
       - action: 'app.see_secrets'
-        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/my-app-name'
+        resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/fbdb27a8-489b-4252-8736-cd237f17ba8b'
   jen:
     foundation_id: 'cf1'
     statements:

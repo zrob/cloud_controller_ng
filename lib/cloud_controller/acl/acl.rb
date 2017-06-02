@@ -2,11 +2,6 @@ module VCAP::CloudController
   class ACL
     FOUNDATION_ID = 'cf1'.freeze
 
-    def self.load_from_file(acl_filepath)
-      data = YAML.load_file(File.join(Rails.root, acl_filepath))
-      new(data.deep_symbolize_keys)
-    end
-
     attr_reader :data
 
     def initialize(data)
@@ -20,5 +15,12 @@ module VCAP::CloudController
         rule[:resource] == resource_urn && rule[:action] == action
       end
     end
+
+    def get_rules(resource_type, action)
+      data.fetch(:statements, []).select do |rule|
+        rule[:resource].split(':').first == resource_type.to_s && rule[:action] == action
+      end
+    end
+
   end
 end

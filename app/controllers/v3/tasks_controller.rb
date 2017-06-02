@@ -14,12 +14,12 @@ class TasksController < ApplicationController
 
   class AclFilepathFetcher
     def self.tasks
-      File.join('config', 'acls', 'tasks-acl.yml')
+      File.open(File.join('config', 'acls', 'tasks-acl.yml'))
     end
   end
 
   def index
-    all_user_acls = YAML.load_file(AclFilepathFetcher.tasks).deep_symbolize_keys
+    all_user_acls = YAML.load(AclFilepathFetcher.tasks).deep_symbolize_keys
     acl = VCAP::CloudController::ACL.new(all_user_acls[:acls][SecurityContext.current_user_name.to_sym])
     authz = VCAP::CloudController::Authz.new(acl)
 
@@ -33,11 +33,12 @@ class TasksController < ApplicationController
       app_not_found! unless app && authz.can_do?(app, 'task.read')
       show_secrets = authz.can_do?(app, 'app.see_secrets')
     else
-      dataset = if can_read_globally?
-                  TaskListFetcher.new.fetch_all(message: message)
-                else
-                  TaskListFetcher.new.fetch_for_spaces(message: message, space_guids: readable_space_guids)
-                end
+      dataset = nil
+      messages = authz.get_app_filter_messages(:app, 'task.read')
+      messages.each do |message|
+        app_dataset = TaskListFetcher.new.fetch_all(message: message)
+        dataset = dataset.nil? ? app_dataset : dataset.union(app_dataset)
+      end
     end
 
     render :ok, json: Presenters::V3::PaginatedListPresenter.new(

@@ -186,7 +186,7 @@ RSpec.describe TasksController, type: :controller do
       context 'when a custom droplet guid is provided' do
         let(:custom_droplet) {
           VCAP::CloudController::DropletModel.make(app_guid: app_model.guid,
-                                                   state: VCAP::CloudController::DropletModel::STAGED_STATE)
+            state: VCAP::CloudController::DropletModel::STAGED_STATE)
         }
 
         it 'successfully creates a task on the specifed droplet' do
@@ -303,10 +303,16 @@ RSpec.describe TasksController, type: :controller do
   end
 
   describe '#index' do
-    let(:user) { set_current_user(VCAP::CloudController::User.make, user_name: 'test-user') }
+    let(:user) { VCAP::CloudController::User.make }
+    let(:acl_data) { { 'acls' => { 'test-user' => { 'foundation_id' => 'cf1', 'statements' => acl_statements } } } }
+    let(:acl_statements) do
+      [{ action: 'task.read', resource: "app:#{app_model.organization.guid}/#{app_model.space.guid}/#{app_model.guid}" }]
+    end
+    let(:fake_acl_data) { StringIO.new(acl_data.to_yaml) }
 
     before do
-      allow_user_read_access_for(user, spaces: [space])
+      set_current_user(user, user_name: 'test-user')
+      allow(TasksController::AclFilepathFetcher).to receive(:tasks).and_return(fake_acl_data)
     end
 
     it 'returns tasks the user has read access' do
@@ -345,10 +351,6 @@ RSpec.describe TasksController, type: :controller do
     end
 
     context 'when accessed as an app subresource' do
-      before do
-        allow(TasksController::AclFilepathFetcher).to receive(:tasks).and_return(File.join('spec', 'fixtures', 'acls', 'test-acl.yml'))
-      end
-
       it 'uses the app as a filter' do
         task_1 = VCAP::CloudController::TaskModel.make(app_guid: app_model.guid)
         task_2 = VCAP::CloudController::TaskModel.make(app_guid: app_model.guid)
@@ -367,15 +369,28 @@ RSpec.describe TasksController, type: :controller do
         expect(parsed_body['pagination']['first']['href']).to include("/v3/apps/#{app_model.guid}/tasks")
       end
 
-      context 'when the user cannot view secrets' do
-        let(:user) { set_current_user(VCAP::CloudController::User.make, user_name: 'test-user-only-task-read') }
+      it 'excludes secrets' do
+        VCAP::CloudController::TaskModel.make(app: app_model)
+
+        get :index, app_guid: app_model.guid
+
+        expect(parsed_body['resources'][0]).not_to have_key('command')
+      end
+
+      context 'when the user can view secrets' do
+        let(:acl_statements) do
+          [
+            { action: 'task.read', resource: "app:#{app_model.organization.guid}/#{app_model.space.guid}/#{app_model.guid}" },
+            { action: 'app.see_secrets', resource: "app:#{app_model.organization.guid}/#{app_model.space.guid}/#{app_model.guid}" },
+          ]
+        end
 
         it 'excludes secrets' do
           VCAP::CloudController::TaskModel.make(app: app_model)
 
           get :index, app_guid: app_model.guid
 
-          expect(parsed_body['resources'][0]).not_to have_key('command')
+          expect(parsed_body['resources'][0]).to have_key('command')
         end
       end
 
@@ -389,7 +404,7 @@ RSpec.describe TasksController, type: :controller do
       end
 
       context 'when the user does not have permissions to read the app' do
-        let(:user) { set_current_user(VCAP::CloudController::User.make, user_name: 'foobar') }
+        let(:acl_statements) { [] }
 
         it 'returns a 404 Resource Not Found error' do
           get :index, app_guid: app_model.guid
@@ -410,8 +425,8 @@ RSpec.describe TasksController, type: :controller do
     end
 
     context 'when the user has global read access' do
-      before do
-        allow_user_global_read_access(user)
+      let(:acl_statements) do
+        [{ action: 'task.read', resource: 'app:*' }]
       end
 
       it 'returns a 200 and all tasks' do
