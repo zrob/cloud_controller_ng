@@ -9,6 +9,8 @@ require 'models/v3/persistence/buildpack_lifecycle_data_model'
 require 'models/v3/persistence/docker_lifecycle_data_model'
 require 'models/v3/persistence/task_model'
 require 'models/v3/persistence/isolation_segment_model'
+require 'models/v3/persistence/pipeline'
+require 'models/v3/persistence/stage'
 
 require 'models/runtime/security_group'
 require 'models/runtime/security_groups_space'

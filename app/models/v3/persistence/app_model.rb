@@ -5,6 +5,8 @@ module VCAP::CloudController
     include Serializer
     APP_NAME_REGEX = /\A[[:alnum:][:punct:][:print:]]+\Z/
 
+    many_to_one :stages
+    
     many_to_many :routes, join_table: :route_mappings, left_key: :app_guid, left_primary_key: :guid, right_primary_key: :guid, right_key: :route_guid
     one_to_many :service_bindings, key: :app_guid, primary_key: :guid
     one_to_many :tasks, class: 'VCAP::CloudController::TaskModel', key: :app_guid, primary_key: :guid

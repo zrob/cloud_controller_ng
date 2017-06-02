@@ -102,4 +102,11 @@ Rails.application.routes.draw do
 
   post '/apps/:app_guid/tasks', to: 'tasks#create'
   get '/apps/:app_guid/tasks', to: 'tasks#index'
+
+  #pipelines
+  post '/pipelines', to: 'pipelines#create'
+  post '/pipelines/:pipeline_guid/add_app', to: 'pipelines#add_app'
+  post '/pipelines/:pipeline_guid/promote', to: 'pipelines#promote'
+  get '/pipelines/:pipeline_guid', to: 'pipelines#show'
+  post '/stages', to: 'stages#create'
 end
