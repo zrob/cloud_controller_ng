@@ -311,8 +311,8 @@ RSpec.describe TasksController, type: :controller do
     let(:fake_acl_data) { StringIO.new(acl_data.to_yaml) }
 
     before do
-      set_current_user(user, user_name: 'test-user')
-      stub_request(:get, "https://acl-service.cfapps.io/acls/test-user").to_return(body: acl_data.to_json)
+      set_current_user(user, user_id: 'test-user-id')
+      stub_request(:get, "https://acl-service.cfapps.io/acls/test-user-id").to_return(body: acl_data.to_json)
     end
 
     it 'returns tasks the user has read access' do

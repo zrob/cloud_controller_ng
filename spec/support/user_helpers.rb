@@ -93,6 +93,7 @@ module UserHelpers
         scope: scopes
       }
       encoding_opts[:user_name] = opts[:user_name] if opts[:user_name]
+      encoding_opts[:user_id] = opts[:user_id] if opts[:user_id]
 
       encoding_opts[:exp] = 0 if opts[:expired]
 

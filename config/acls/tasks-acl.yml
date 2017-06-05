@@ -1,27 +1,31 @@
 ---
 acls:
-  aakash:
+  #aakash shah
+  5b37b66c-3c23-4fee-b7d3-b33565f0ebed:
     foundation_id: 'cf1'
     statements:
       - action: 'task.read'
         resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/fbdb27a8-489b-4252-8736-cd237f17ba8b'
       - action: 'app.see_secrets'
         resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/fbdb27a8-489b-4252-8736-cd237f17ba8b'
-  jen:
+  #jen hamon
+  565cbf06-fe75-4170-a247-a630e9b32c06:
     foundation_id: 'cf1'
     statements:
       - action: 'task.read'
         resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/*'
       - action: 'app.see_secrets'
         resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/bac75ff6-ff80-4e66-911d-cf542a812700/*'
-  sree:
+  #sree t
+  3b0676dc-c219-4031-af66-8f408a78fbd4:
     foundation_id: 'cf1'
     statements:
       - action: 'task.read'
         resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/*'
       - action: 'app.see_secrets'
         resource: 'app:c017c037-2a46-472d-8ac9-97585e77fda1/*'
-  zach:
+  #zach rob
+  d1da3385-7060-4ac4-887f-c09bf33d2372:
     foundation_id: 'cf1'
     statements:
       - action: 'task.read'
@@ -63,3 +67,8 @@ Admin:
   - resource: urn:cf1:cloud_controller:task:*
   - resource: urn:cf1:cloud_controller:org:*
   - resource: urn:cf1:cloud_controller:space:*
+
+# cf auth aakash shah &>/dev/null && cf curl /v3/tasks
+# cf auth jen hamon &>/dev/null && cf curl /v3/tasks
+# cf auth sree t &>/dev/null && cf curl /v3/tasks
+# cf auth zach rob &>/dev/null && cf curl /v3/tasks

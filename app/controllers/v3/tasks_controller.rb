@@ -13,7 +13,7 @@ class TasksController < ApplicationController
   include SubResource
 
   def index
-    acl = VCAP::CloudController::AclServiceClient.new.get_acl(SecurityContext.current_user_name.to_sym)
+    acl = VCAP::CloudController::AclServiceClient.new.get_acl(SecurityContext.current_user_id)
     authz = VCAP::CloudController::Authz.new(acl)
 
     message = TasksListMessage.from_params(subresource_query_params)
