@@ -122,5 +122,6 @@ require 'cloud_controller/user_audit_info'
 
 require 'cloud_controller/acl/acl'
 require 'cloud_controller/acl/authz'
+require 'cloud_controller/acl/acl_service_client'
 
 require 'services'

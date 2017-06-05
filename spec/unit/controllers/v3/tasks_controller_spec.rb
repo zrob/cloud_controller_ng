@@ -304,15 +304,15 @@ RSpec.describe TasksController, type: :controller do
 
   describe '#index' do
     let(:user) { VCAP::CloudController::User.make }
-    let(:acl_data) { { 'acls' => { 'test-user' => { 'foundation_id' => 'cf1', 'statements' => acl_statements } } } }
+    let(:acl_data) { { 'accessControlEntries' => acl_statements } }
     let(:acl_statements) do
-      [{ action: 'task.read', resource: "app:#{app_model.organization.guid}/#{app_model.space.guid}/#{app_model.guid}" }]
+      [{ 'action' => 'task.read', 'resourceUrn' => "app:#{app_model.organization.guid}/#{app_model.space.guid}/#{app_model.guid}" }]
     end
     let(:fake_acl_data) { StringIO.new(acl_data.to_yaml) }
 
     before do
       set_current_user(user, user_name: 'test-user')
-      allow(TasksController::AclFilepathFetcher).to receive(:tasks).and_return(fake_acl_data)
+      stub_request(:get, "https://acl-service.cfapps.io/acls/test-user").to_return(body: acl_data.to_json)
     end
 
     it 'returns tasks the user has read access' do
@@ -380,8 +380,8 @@ RSpec.describe TasksController, type: :controller do
       context 'when the user can view secrets' do
         let(:acl_statements) do
           [
-            { action: 'task.read', resource: "app:#{app_model.organization.guid}/#{app_model.space.guid}/#{app_model.guid}" },
-            { action: 'app.see_secrets', resource: "app:#{app_model.organization.guid}/#{app_model.space.guid}/#{app_model.guid}" },
+            { 'action' => 'task.read', 'resourceUrn' => "app:#{app_model.organization.guid}/#{app_model.space.guid}/#{app_model.guid}" },
+            { 'action' => 'app.see_secrets', 'resourceUrn' => "app:#{app_model.organization.guid}/#{app_model.space.guid}/#{app_model.guid}" },
           ]
         end
 
@@ -426,7 +426,7 @@ RSpec.describe TasksController, type: :controller do
 
     context 'when the user has global read access' do
       let(:acl_statements) do
-        [{ action: 'task.read', resource: 'app:*' }]
+        [{ 'action' => 'task.read', 'resourceUrn' => 'app:*' }]
       end
 
       it 'returns a 200 and all tasks' do

@@ -12,15 +12,8 @@ require 'controllers/v3/mixins/sub_resource'
 class TasksController < ApplicationController
   include SubResource
 
-  class AclFilepathFetcher
-    def self.tasks
-      File.open(File.join('config', 'acls', 'tasks-acl.yml'))
-    end
-  end
-
   def index
-    all_user_acls = YAML.load(AclFilepathFetcher.tasks).deep_symbolize_keys
-    acl = VCAP::CloudController::ACL.new(all_user_acls[:acls][SecurityContext.current_user_name.to_sym])
+    acl = VCAP::CloudController::AclServiceClient.new.get_acl(SecurityContext.current_user_name.to_sym)
     authz = VCAP::CloudController::Authz.new(acl)
 
     message = TasksListMessage.from_params(subresource_query_params)
@@ -39,6 +32,10 @@ class TasksController < ApplicationController
         app_dataset = TaskListFetcher.new.fetch_all(message: message)
         dataset = dataset.nil? ? app_dataset : dataset.union(app_dataset)
       end
+
+       if dataset.nil?
+         dataset = TaskModel.dataset.where(guid: 'does-not-exist_empty_dataset')
+       end
     end
 
     render :ok, json: Presenters::V3::PaginatedListPresenter.new(
