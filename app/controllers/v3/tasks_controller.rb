@@ -33,6 +33,8 @@ class TasksController < ApplicationController
         dataset = dataset.nil? ? app_dataset : dataset.union(app_dataset)
       end
 
+      # our boy jeremy has got something for us!
+      # https://github.com/jeremyevans/sequel/blob/master/lib/sequel/extensions/null_dataset.rb
        if dataset.nil?
          dataset = TaskModel.dataset.where(guid: 'does-not-exist_empty_dataset')
        end
