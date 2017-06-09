@@ -55,7 +55,7 @@ module VCAP::CloudController
           expect(config[:users_can_select_backend]).to eq(true)
         end
 
-        it 'runs apps on the dea' do
+        it 'defaults to not running apps on diego' do
           expect(config[:default_to_diego_backend]).to eq(false)
         end
 
@@ -65,10 +65,6 @@ module VCAP::CloudController
 
         it 'sets a default value for min staging file descriptor limit' do
           expect(config[:staging][:minimum_staging_file_descriptor_limit]).to eq(16384)
-        end
-
-        it 'sets a default value for advertisement_timeout_in_seconds' do
-          expect(config[:dea_advertisement_timeout_in_seconds]).to eq(10)
         end
 
         it 'sets a default value for placement_top_stager_percentage' do
@@ -339,8 +335,9 @@ module VCAP::CloudController
       it 'creates the runners' do
         expect(VCAP::CloudController::Runners).to receive(:new).with(
           @test_config,
-          message_bus,
-          instance_of(Dea::Pool))
+          nil,
+          nil
+        )
         Config.configure_components(@test_config)
         Config.configure_components_depending_on_message_bus(message_bus)
       end
@@ -348,8 +345,9 @@ module VCAP::CloudController
       it 'creates the stagers' do
         expect(VCAP::CloudController::Stagers).to receive(:new).with(
           @test_config,
-          message_bus,
-          instance_of(Dea::Pool))
+          nil,
+          nil
+        )
         Config.configure_components(@test_config)
         Config.configure_components_depending_on_message_bus(message_bus)
       end
@@ -359,25 +357,6 @@ module VCAP::CloudController
 
         Config.configure_components(@test_config)
         Config.configure_components_depending_on_message_bus(message_bus)
-      end
-
-      it 'sets the dea client' do
-        Config.configure_components(@test_config)
-        Config.configure_components_depending_on_message_bus(message_bus)
-        expect(Dea::Client.config).to eq(@test_config)
-        expect(Dea::Client.message_bus).to eq(message_bus)
-
-        expect(message_bus).to receive(:subscribe).at_least(:once)
-        Dea::Client.dea_pool.register_subscriptions
-      end
-
-      it 'sets the legacy bulk' do
-        bulk_config = { bulk_api: { auth_user: 'user', auth_password: 'password' } }
-        Config.configure_components(@test_config.merge(bulk_config))
-        Config.configure_components_depending_on_message_bus(message_bus)
-        expect(LegacyBulk.config[:auth_user]).to eq('user')
-        expect(LegacyBulk.config[:auth_password]).to eq('password')
-        expect(LegacyBulk.message_bus).to eq(message_bus)
       end
 
       it 'sets up the quota definition' do
