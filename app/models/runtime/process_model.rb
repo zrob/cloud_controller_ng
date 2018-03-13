@@ -261,6 +261,7 @@ module VCAP::CloudController
     end
 
     def before_create
+      self.lrp_guid = SecureRandom.uuid
       set_new_version
       super
     end
