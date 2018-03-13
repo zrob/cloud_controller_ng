@@ -49,6 +49,10 @@ module VCAP::CloudController
       @clock.schedule_frequent_inline_job(clock_opts) do
         Jobs::Diego::Sync.new
       end
+
+      @clock.schedule_frequent_inline_job({name: 'deployer', interval: 2, timeout: 1000}) do
+        Deploy.new
+      end
     end
 
     def start_frequent_jobs

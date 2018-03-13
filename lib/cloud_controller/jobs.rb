@@ -8,6 +8,7 @@ require 'jobs/pollable_job_wrapper'
 require 'jobs/timeout_job'
 
 require 'jobs/diego/sync'
+require 'jobs/diego/deploy'
 
 require 'jobs/runtime/app_usage_events_cleanup'
 require 'jobs/runtime/blobstore_delete'

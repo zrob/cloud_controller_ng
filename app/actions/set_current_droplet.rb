@@ -10,8 +10,10 @@ module VCAP::CloudController
 
     def update_to(app, droplet)
       unable_to_assign! unless droplet.present? && droplet_associated?(app, droplet)
-      app_started! if app.desired_state != ProcessModel::STOPPED
-
+      # Allow started apps to have a new droplet applied.  This facilitates zero downtime.
+      #
+      # app_started! if app.desired_state != ProcessModel::STOPPED
+      
       assign_droplet = { droplet_guid: droplet.guid }
 
       app.db.transaction do
@@ -29,6 +31,29 @@ module VCAP::CloudController
         setup_processes(app)
 
         app.save
+
+        # Setup a process to manage the n+1 version
+        #
+        # This should really be a clone of the web process except for number of instances.
+        # For this spike, just set healthcheck and such to what we assume for a normal web process.
+        #
+        # Note that ports isn't easily cloneable.  It is generally inferred later for web processes.  Proper cloning
+        # would have to happen for this approach.
+        # See: https://github.com/cloudfoundry/cloud_controller_ng/blob/43e0f7b95581dc11248f40861a99ecf2c5e6a6d3/lib/cloud_controller/diego/protocol/open_process_ports.rb#L15
+        web_process = app.web_process
+        np = ProcessCreate.new(@user_audit_info).create(app, { type: 'web-deploy', command: web_process.command })
+        np.update({ instances: 1, health_check_type: 'port', ports: [8080], state: 'STARTED' })
+
+        # Copy routes from web process to the deploy process.
+        RouteMappingModel.where(app: app, process: np).destroy
+        web_process.routes.each do |route|
+          message = RouteMappingsCreateMessage.new({ relationships: { process: { type: np.type } } })
+          RouteMappingCreate.new(@user_audit_info, route, np).add(message)
+        end
+
+        # Create a deployment object to track work that needs to be done by 'some background process'
+        deployment = Deployment.new(app_guid: app.guid, droplet_guid: droplet.guid, state: 'DEPLOYING', instances: web_process.instances)
+        deployment.save
       end
 
       app
