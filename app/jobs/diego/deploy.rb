@@ -1,3 +1,10 @@
+# In this spike, this code runs on a timer in the clock.
+# Ideally this could instead be triggered by changes to the system.
+# Some possible actions that would be notable to trigger on might be:
+# 1. A new deployment is added
+# 2. Diego reports a process state change to RUNNING
+#
+
 module VCAP::CloudController
   class Deploy < VCAP::CloudController::Jobs::CCJob
     def perform
@@ -8,7 +15,7 @@ module VCAP::CloudController
         next_proc = app.processes.select { |p| p.type == 'web-deploy' }.first
 
         # Get the running state of the next process. Check that the expected number of processes
-        # are in a RUNNING state. If the expected number of processes is not in a RUNNING state 
+        # are in a RUNNING state. If the expected number of processes is not in a RUNNING state
         # then go to the next deployment and wait for the system to converge.
         lrps         = bbs_instances_client.lrp_instances(next_proc)
         all_running  = lrps.all? { |lrp| lrp.state == 'RUNNING' }
