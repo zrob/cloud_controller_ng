@@ -43,7 +43,7 @@ module VCAP::CloudController
     def start_inline_jobs
       clock_opts = {
         name: 'diego_sync',
-        interval: @config.get(:diego_sync, :frequency_in_seconds),
+        interval: 3,
         timeout: @timeout_calculator.calculate(:diego_sync),
       }
       @clock.schedule_frequent_inline_job(clock_opts) do

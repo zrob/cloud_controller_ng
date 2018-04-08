@@ -41,8 +41,8 @@ module VCAP::CloudController
         # would have to happen for this approach.
         # See: https://github.com/cloudfoundry/cloud_controller_ng/blob/43e0f7b95581dc11248f40861a99ecf2c5e6a6d3/lib/cloud_controller/diego/protocol/open_process_ports.rb#L15
         web_process = app.web_process
-        np = ProcessCreate.new(@user_audit_info).create(app, { type: 'web-deploy', command: web_process.command })
-        np.update({ instances: 1, health_check_type: 'port', ports: [8080], state: 'STARTED' })
+        np = ProcessCreate.new(@user_audit_info).create(app, { type: 'web-deploy', command: web_process.command, memory: 100, disk_quota: 100 })
+        np.update({ instances: 1, health_check_type: 60, health_check_type: 'port', ports: [8080], state: 'STARTED' })
 
         # Copy routes from web process to the deploy process.
         RouteMappingModel.where(app: app, process: np).destroy
