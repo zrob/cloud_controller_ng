@@ -8,6 +8,7 @@ module VCAP::CloudController
       to_one :app, exclude_in: [:update], association_name: :process
       to_one :route, exclude_in: [:update]
       attribute :app_port, Integer, default: nil, exclude_in: [:update]
+      attribute :function_name, String, default: nil
     end
 
     model_class_name :RouteMappingModel

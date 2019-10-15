@@ -34,6 +34,7 @@ module VCAP::CloudController
       :sidecars,
       :stack,
       :timeout,
+      :functions
     ]
 
     HEALTH_CHECK_TYPE_MAPPING = { HealthCheckTypes::NONE => HealthCheckTypes::PROCESS }.freeze

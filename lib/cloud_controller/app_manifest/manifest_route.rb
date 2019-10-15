@@ -6,7 +6,8 @@ module VCAP::CloudController
     SUPPORTED_TCP_SCHEMES = %w{tcp unspecified}.freeze
     WILDCARD_HOST = '*'.freeze
 
-    def self.parse(string)
+    def self.parse(entry)
+      string = entry[:route]
       parsed_uri = Addressable::URI.heuristic_parse(string, scheme: 'unspecified')
 
       attrs = if parsed_uri.nil?
@@ -16,6 +17,7 @@ module VCAP::CloudController
               end
 
       attrs[:full_route] = string
+      attrs[:function] = entry[:function]
       ManifestRoute.new(attrs)
     end
 
@@ -45,7 +47,8 @@ module VCAP::CloudController
       {
         candidate_host_domain_pairs: pairs,
         port: @attrs[:port],
-        path: @attrs[:path]
+        path: @attrs[:path],
+        function_name: @attrs[:function]
       }
     end
 

@@ -29,6 +29,22 @@ RSpec.describe 'Apps' do
       )
     end
 
+
+
+
+    it 'tries' do
+      route = VCAP::CloudController::Route.make(space: space)
+
+      post '/v2/route_mappings', {
+        route_guid: route.guid, app_guid: process.app.guid, function_name: 'test'
+      }.to_json, headers_for(user)
+
+   puts MultiJson.load(last_response.body)
+
+
+
+    end
+
     it 'lists all apps' do
       get '/v2/apps', nil, headers_for(user)
 

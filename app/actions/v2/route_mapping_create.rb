@@ -29,11 +29,15 @@ module VCAP::CloudController
       def add
         validate!
 
+
+        pp request_attrs
+
         route_mapping = RouteMappingModel.new(
           app:          app,
           route:        route,
           process_type: process.type,
-          app_port:     port_with_defaults
+          app_port:     port_with_defaults,
+          function_name: request_attrs['function_name']
         )
 
         route_handler = ProcessRouteHandler.new(process)

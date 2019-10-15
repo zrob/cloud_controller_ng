@@ -22,18 +22,21 @@ module VCAP::CloudController
           route = find_or_create_valid_route(app, manifest_route.to_hash, user_audit_info)
 
           if route
-            routes_to_map << route
+            routes_to_map << {route: route, manifest_route: manifest_route.to_hash }
           else
             raise InvalidRoute.new("No domains exist for route #{manifest_route}")
           end
         end
 
         # map route to app, but do this only if the full message contains valid routes
-        routes_to_map.
-          select { |route| RouteMappingModel.find(app: app, route: route).nil? }.
-          each do |route|
+        routes_to_map.each do |m|
+          route = m[:route]
+          manifest_route = m[:manifest_route]
+
+          next unless RouteMappingModel.find(app: app, route: route).nil?
+
           UpdateRouteDestinations.add(
-            [{ app_guid: app_guid, process_type: 'web', }],
+            [{ app_guid: app_guid, process_type: 'web', function_name: manifest_route[:function_name]}],
             route,
             apps_hash,
             user_audit_info,

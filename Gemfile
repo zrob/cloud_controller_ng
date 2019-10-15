@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+gem 'k8s-client'
+
 gem 'addressable'
 gem 'allowy'
 gem 'cf-copilot', '0.0.14'

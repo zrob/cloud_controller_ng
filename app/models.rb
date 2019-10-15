@@ -97,6 +97,7 @@ require 'models/runtime/task_annotation_model'
 require 'models/runtime/process_annotation_model'
 require 'models/runtime/deployment_annotation_model'
 require 'models/runtime/buildpack_annotation_model'
+require 'models/runtime/function_model'
 
 require 'models/services/service'
 require 'models/services/service_binding'

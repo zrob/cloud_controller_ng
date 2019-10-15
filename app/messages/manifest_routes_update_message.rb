@@ -29,7 +29,7 @@ module VCAP::CloudController
     validate :no_route_and_routes_conflict
 
     def manifest_routes
-      @manifest_routes ||= routes.map { |route| ManifestRoute.parse(route[:route]) }
+      @manifest_routes ||= routes.map { |route| ManifestRoute.parse(route) }
     end
 
     private

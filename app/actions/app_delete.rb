@@ -81,6 +81,10 @@ module VCAP::CloudController
       RouteMappingDelete.new(@user_audit_info).delete(route_mappings_to_delete(app))
       ProcessDelete.new(@user_audit_info).delete(app.processes)
 
+      FunctionModel.where(app_guid: app.guid).each do |f|
+        f.destroy
+      end
+
       delete_buildpack_cache(app)
     end
 

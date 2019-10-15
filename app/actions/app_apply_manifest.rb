@@ -9,7 +9,8 @@ require 'cloud_controller/random_route_generator'
 
 module VCAP::CloudController
   class AppApplyManifest
-    class NoDefaultDomain < StandardError; end
+    class NoDefaultDomain < StandardError;
+    end
 
     SERVICE_BINDING_TYPE = 'app'.freeze
 
@@ -28,16 +29,16 @@ module VCAP::CloudController
         end
 
         process_type = manifest_process_update_msg.type
-        process = find_process(app, process_type) || create_process(app, manifest_process_update_msg, process_type)
+        process      = find_process(app, process_type) || create_process(app, manifest_process_update_msg, process_type)
 
         process_update = ProcessUpdate.new(@user_audit_info, manifest_triggered: true)
         process_update.update(process, manifest_process_update_msg, ManifestStrategy)
       end
 
       message.manifest_process_scale_messages.each do |manifest_process_scale_msg|
-        process = find_process(app, manifest_process_scale_msg.type)
+        process                             = find_process(app, manifest_process_scale_msg.type)
         process.skip_process_version_update = true if manifest_process_scale_msg.requested?(:memory)
-        process_scale = ProcessScale.new(@user_audit_info, process, manifest_process_scale_msg.to_process_scale_message, manifest_triggered: true)
+        process_scale                       = ProcessScale.new(@user_audit_info, process, manifest_process_scale_msg.to_process_scale_message, manifest_triggered: true)
         process_scale.scale
       end
 
@@ -51,7 +52,7 @@ module VCAP::CloudController
       end
 
       app_update_message = message.app_update_message
-      lifecycle = AppLifecycleProvider.provide_for_update(app_update_message, app)
+      lifecycle          = AppLifecycleProvider.provide_for_update(app_update_message, app)
       AppUpdate.new(@user_audit_info, manifest_triggered: true).update(app, app_update_message, lifecycle)
 
       update_routes(app, message)
@@ -59,6 +60,34 @@ module VCAP::CloudController
       AppPatchEnvironmentVariables.new(@user_audit_info, manifest_triggered: true).patch(app, message.app_update_environment_variables_message)
 
       create_service_bindings(message.manifest_service_bindings_message, app) if message.services.present?
+
+      message.functions&.each do |f|
+        FunctionModel.create(
+          {
+            name:         f[:name],
+            artifact:     f[:artifact],
+            image:        f[:image],
+            git_repo:     f[:git_repo],
+            git_revision: f[:git_revision],
+            app:          app
+          })
+
+        Event.create(
+          type:              'audit.app.function.create',
+          actor:             @user_audit_info.user_guid,
+          actor_type:        'user',
+          actor_name:        @user_audit_info.user_email,
+          actor_username:    @user_audit_info.user_name,
+          actee:             app.guid,
+          actee_type:        'app',
+          actee_name:        app.name,
+          timestamp:         Sequel::CURRENT_TIMESTAMP,
+          metadata:          {},
+          space_guid:        app.space.guid,
+          organization_guid: app.space.organization.guid,
+        )
+      end
+
       app
     end
 
@@ -70,7 +99,7 @@ module VCAP::CloudController
 
     def create_process(app, manifest_process_update_msg, process_type)
       ProcessCreate.new(@user_audit_info, manifest_triggered: true).create(app, {
-        type: process_type,
+        type:    process_type,
         command: manifest_process_update_msg.command
       })
     end
@@ -80,7 +109,7 @@ module VCAP::CloudController
     end
 
     def update_routes(app, message)
-      update_message = message.manifest_routes_update_message
+      update_message  = message.manifest_routes_update_message
       existing_routes = RouteMappingModel.where(app_guid: app.guid).all
 
       if update_message.no_route

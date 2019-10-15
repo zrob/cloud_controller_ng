@@ -25,71 +25,80 @@ RSpec.describe 'Space Manifests' do
     let(:yml_manifest) do
       {
         'applications' => [
-          { 'name' => app1_model.name,
-            'instances' => 4,
-            'memory' => '2048MB',
-            'disk_quota' => '1.5GB',
-            'buildpack' => buildpack.name,
-            'stack' => buildpack.stack,
-            'command' => 'new-command',
-            'health_check_type' => 'http',
+          { 'name'                       => app1_model.name,
+            'instances'                  => 4,
+            'memory'                     => '2048MB',
+            'disk_quota'                 => '1.5GB',
+            'buildpack'                  => buildpack.name,
+            'stack'                      => buildpack.stack,
+            'command'                    => 'new-command',
+            'health_check_type'          => 'http',
             'health_check_http_endpoint' => '/health',
-            'timeout' => 42,
-            'env' => {
+            'timeout'                    => 42,
+            'env'                        => {
               'k1' => 'mangos',
               'k2' => 'pears',
               'k3' => 'watermelon'
             },
-            'routes' => [
-              { 'route' => "https://#{route.host}.#{route.domain.name}" },
+            'routes'                     => [
+              { 'route' => "https://#{route.host}.#{route.domain.name}", 'function' => 'some-function' },
               { 'route' => "https://#{second_route.host}.#{second_route.domain.name}/path" }
             ],
-            'services' => [
+            'functions'                  => [
+              {
+                name:         'the-name',
+                artifact:     'the-artifact',
+                image:        'the-image',
+                git_repo:     'the-repo',
+                git_revision: 'the-revision',
+              }.stringify_keys
+            ],
+            'services'                   => [
               service_instance.name
             ],
-            'metadata' => {
+            'metadata'                   => {
               'annotations' => {
                 'potato' => 'idaho',
-                'juice' => 'newton',
-                'berry' => nil,
+                'juice'  => 'newton',
+                'berry'  => nil,
               },
-              'labels' => {
-                'potato' => 'yam',
-                'downton' => nil,
+              'labels'      => {
+                'potato'            => 'yam',
+                'downton'           => nil,
                 'myspace.com/songs' => 'missing',
               },
             },
           },
-          { 'name' => app2_model.name,
-            'instances' => 3,
-            'memory' => '2048MB',
-            'disk_quota' => '1.5GB',
-            'buildpack' => buildpack.name,
-            'stack' => buildpack.stack,
-            'command' => 'newer-command',
-            'health_check_type' => 'http',
+          { 'name'                       => app2_model.name,
+            'instances'                  => 3,
+            'memory'                     => '2048MB',
+            'disk_quota'                 => '1.5GB',
+            'buildpack'                  => buildpack.name,
+            'stack'                      => buildpack.stack,
+            'command'                    => 'newer-command',
+            'health_check_type'          => 'http',
             'health_check_http_endpoint' => '/health',
-            'timeout' => 42,
-            'env' => {
+            'timeout'                    => 42,
+            'env'                        => {
               'k1' => 'cucumber',
               'k2' => 'radish',
               'k3' => 'fleas'
             },
-            'routes' => [
+            'routes'                     => [
               { 'route' => "https://#{route.host}.#{route.domain.name}" },
               { 'route' => "https://#{second_route.host}.#{second_route.domain.name}/path" }
             ],
-            'services' => [
+            'services'                   => [
               service_instance.name
             ],
-            'metadata' => {
+            'metadata'                   => {
               'annotations' => {
                 'potato' => 'idaho',
-                'juice' => 'newton',
-                'berry' => nil,
+                'juice'  => 'newton',
+                'berry'  => nil,
               },
-              'labels' => {
-                'potato' => 'yam',
+              'labels'      => {
+                'potato'  => 'yam',
                 'downton' => nil,
               },
             },
@@ -101,9 +110,9 @@ RSpec.describe 'Space Manifests' do
     before do
       stub_bind(service_instance)
       VCAP::CloudController::LabelsUpdate.update(app1_model, { 'potato' => 'french',
-        'downton' => 'abbey road', }, VCAP::CloudController::AppLabelModel)
+        'downton'                                                       => 'abbey road', }, VCAP::CloudController::AppLabelModel)
       VCAP::CloudController::AnnotationsUpdate.update(app1_model, { 'potato' => 'baked',
-        'berry' => 'white', }, VCAP::CloudController::AppAnnotationModel)
+        'berry'                                                              => 'white', }, VCAP::CloudController::AppAnnotationModel)
     end
 
     it 'applies the manifest' do
@@ -138,6 +147,17 @@ RSpec.describe 'Space Manifests' do
         'k3' => 'watermelon'
       )
       expect(app1_model.routes).to match_array([route, second_route])
+      expect(VCAP::CloudController::RouteMappingModel.where(route: route, app: app1_model).first.function_name).to eq('some-function')
+
+
+      function = VCAP::CloudController::FunctionModel.first
+      expect(function).not_to be_nil
+      expect(function.app_guid).to eq(app1_model.guid)
+      expect(function.name).to eq('the-name')
+      expect(function.artifact).to eq('the-artifact')
+      expect(function.image).to eq('the-image')
+      expect(function.git_repo).to eq('the-repo')
+      expect(function.git_revision).to eq('the-revision')
 
       expect(app1_model.service_bindings.length).to eq 1
       expect(app1_model.service_bindings.first.service_instance).to eq service_instance
@@ -169,45 +189,45 @@ RSpec.describe 'Space Manifests' do
       let!(:yml_manifest) do
         {
           'applications' => [
-            { 'name' => app1_model.name,
-              'instances' => 4,
-              'memory' => '2048MB',
-              'disk_quota' => '1.5GB',
-              'buildpack' => buildpack.name,
-              'stack' => buildpack.stack,
-              'command' => 'new-command',
-              'health_check_type' => 'http',
+            { 'name'                       => app1_model.name,
+              'instances'                  => 4,
+              'memory'                     => '2048MB',
+              'disk_quota'                 => '1.5GB',
+              'buildpack'                  => buildpack.name,
+              'stack'                      => buildpack.stack,
+              'command'                    => 'new-command',
+              'health_check_type'          => 'http',
               'health_check_http_endpoint' => '/health',
-              'timeout' => 42,
-              'env' => {
+              'timeout'                    => 42,
+              'env'                        => {
                 'k1' => 'mangos',
                 'k2' => 'pears',
                 'k3' => 'watermelon'
               },
-              'routes' => [
+              'routes'                     => [
                 { 'route' => "https://#{route.host}.#{route.domain.name}" },
                 { 'route' => "https://#{second_route.host}.#{second_route.domain.name}/path" }
               ],
-              'services' => [
+              'services'                   => [
                 service_instance.name
               ]
             },
-            { 'name' => 'some-other-app',
-              'instances' => 4,
-              'memory' => '2048MB',
-              'disk_quota' => '1.5GB',
-              'buildpack' => buildpack.name,
-              'stack' => buildpack.stack,
-              'command' => 'new-command',
-              'health_check_type' => 'http',
+            { 'name'                       => 'some-other-app',
+              'instances'                  => 4,
+              'memory'                     => '2048MB',
+              'disk_quota'                 => '1.5GB',
+              'buildpack'                  => buildpack.name,
+              'stack'                      => buildpack.stack,
+              'command'                    => 'new-command',
+              'health_check_type'          => 'http',
               'health_check_http_endpoint' => '/health',
-              'timeout' => 42,
-              'env' => {
+              'timeout'                    => 42,
+              'env'                        => {
                 'k1' => 'mangos',
                 'k2' => 'pears',
                 'k3' => 'watermelon'
               },
-              'services' => [
+              'services'                   => [
                 service_instance.name
               ]
             }
@@ -227,7 +247,7 @@ RSpec.describe 'Space Manifests' do
         Delayed::Worker.new.work_off
         expect(VCAP::CloudController::PollableJobModel.find(guid: job_guid)).to be_complete, VCAP::CloudController::PollableJobModel.find(guid: job_guid).cf_api_error
 
-        new_app = VCAP::CloudController::AppModel.last
+        new_app     = VCAP::CloudController::AppModel.last
         web_process = new_app.web_processes.first
 
         expect(web_process.instances).to eq(4)
@@ -260,7 +280,7 @@ RSpec.describe 'Space Manifests' do
         {
           'applications' => [
             {
-              'name' => docker_app.name,
+              'name'   => docker_app.name,
               'routes' => [
                 { 'route' => "https://#{docker_route.host}.#{docker_route.domain.name}" },
               ],
@@ -292,49 +312,49 @@ RSpec.describe 'Space Manifests' do
       let!(:yml_manifest) do
         {
           'applications' => [
-            { 'name' => app1_model.name,
-              'instances' => 4,
-              'memory' => '2048MB',
-              'disk_quota' => '1.5GB',
-              'buildpack' => buildpack.name,
-              'stack' => buildpack.stack,
-              'command' => 'new-command',
-              'health_check_type' => 'http',
+            { 'name'                       => app1_model.name,
+              'instances'                  => 4,
+              'memory'                     => '2048MB',
+              'disk_quota'                 => '1.5GB',
+              'buildpack'                  => buildpack.name,
+              'stack'                      => buildpack.stack,
+              'command'                    => 'new-command',
+              'health_check_type'          => 'http',
               'health_check_http_endpoint' => '/health',
-              'timeout' => 42,
-              'env' => {
+              'timeout'                    => 42,
+              'env'                        => {
                 'k1' => 'mangos',
                 'k2' => 'pears',
                 'k3' => 'watermelon'
               },
-              'routes' => [
+              'routes'                     => [
                 { 'route' => "https://#{route.host}.#{route.domain.name}" },
                 { 'route' => "https://#{second_route.host}.#{second_route.domain.name}/path" }
               ],
-              'services' => [
+              'services'                   => [
                 service_instance.name
               ]
             },
-            { 'name' => app2_model.name,
-              'instances' => 4,
-              'memory' => '2048MB',
-              'disk_quota' => '1.5GB',
-              'buildpack' => buildpack.name,
-              'stack' => buildpack.stack,
-              'command' => 'new-command',
-              'health_check_type' => 'http',
+            { 'name'                       => app2_model.name,
+              'instances'                  => 4,
+              'memory'                     => '2048MB',
+              'disk_quota'                 => '1.5GB',
+              'buildpack'                  => buildpack.name,
+              'stack'                      => buildpack.stack,
+              'command'                    => 'new-command',
+              'health_check_type'          => 'http',
               'health_check_http_endpoint' => '/health',
-              'timeout' => 42,
-              'env' => {
+              'timeout'                    => 42,
+              'env'                        => {
                 'k1' => 'mangos',
                 'k2' => 'pears',
                 'k3' => 'watermelon'
               },
-              'routes' => [
+              'routes'                     => [
                 { 'route' => "https://#{route.host}.#{route.domain.name}" },
                 { 'route' => "https://#{second_route.host}.#{second_route.domain.name}/path" }
               ],
-              'services' => [
+              'services'                   => [
                 service_instance.name
               ]
             }
@@ -386,26 +406,26 @@ RSpec.describe 'Space Manifests' do
       let(:yml_manifest) do
         {
           'applications' => [
-            { 'name' => app1_model.name,
-              'instances' => 4,
-              'memory' => '2048MB',
-              'disk_quota' => '1.5GB',
-              'buildpack' => buildpack.name,
-              'stack' => buildpack.stack,
-              'command' => 'new-command',
-              'health_check_type' => 'http',
+            { 'name'                       => app1_model.name,
+              'instances'                  => 4,
+              'memory'                     => '2048MB',
+              'disk_quota'                 => '1.5GB',
+              'buildpack'                  => buildpack.name,
+              'stack'                      => buildpack.stack,
+              'command'                    => 'new-command',
+              'health_check_type'          => 'http',
               'health_check_http_endpoint' => '/health',
-              'timeout' => 42,
-              'env' => {
+              'timeout'                    => 42,
+              'env'                        => {
                 'k1' => 'mangos',
                 'k2' => 'pears',
                 'k3' => 'watermelon'
               },
-              'routes' => [
+              'routes'                     => [
                 { 'route' => "https://#{route.host}.#{route.domain.name}" },
                 { 'route' => "https://pants.#{second_route.domain.name}/path" }
               ],
-              'services' => [
+              'services'                   => [
                 service_instance.name
               ]
             }

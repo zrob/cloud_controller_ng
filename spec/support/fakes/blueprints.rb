@@ -37,6 +37,15 @@ module VCAP::CloudController
     "VCAP::CloudController::#{root}AnnotationModel".constantize.blueprint do end
   end
 
+  FunctionModel.blueprint do
+    name         { Sham.name }
+    artifact     { 'artifact' }
+    image        { 'example.com/image' }
+    git_repo     { 'git.example.com/repo' }
+    git_revision { 'master' }
+    app        { AppModel.make }
+  end
+
   IsolationSegmentModel.blueprint do
     guid { Sham.guid }
     name { Sham.name }

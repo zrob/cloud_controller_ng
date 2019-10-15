@@ -11,6 +11,7 @@ module CloudController
             'app_port'   => present_app_port(route_mapping),
             'app_guid'   => route_mapping.app_guid,
             'route_guid' => route_mapping.route_guid,
+            'function_name' => route_mapping.function_name,
           }
           entity.merge!(RelationsPresenter.new.to_hash(controller, route_mapping, opts, depth, parents, orphans))
         end

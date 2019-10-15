@@ -210,6 +210,13 @@ Rails.application.routes.draw do
   delete '/buildpacks/:guid', to: 'buildpacks#destroy'
   post '/buildpacks/:guid/upload', to: 'buildpacks#upload'
 
+
+  # functions
+  get '/functions', to: 'functions#index'
+  get '/functions/:guid', to: 'functions#show'
+  post '/functions', to: 'functions#create'
+  delete '/functions/:guid', to: 'functions#destroy'
+
   # feature flags
   get '/feature_flags', to: 'feature_flags#index'
   get '/feature_flags/:name', to: 'feature_flags#show'
